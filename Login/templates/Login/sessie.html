@@ -1,0 +1,30 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}All Students{% endblock %}
+
+{% block content %}
+    <h1>All Students</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Employer</th>
+                <th>Kennis/th>
+                <th>Extra</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sessie in sessie %}
+                <tr>
+                    <td>{{ sessie.student }}</td>
+                    <td>{{ sessie.employer }}</td>
+                    <td>{{ sessie.kennis }}</td>
+                    <td>{{ sessie.extra }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
