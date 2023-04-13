@@ -1,0 +1,48 @@
+{%  if form.errors %}
+ <p>Je wachtwoord of gebruikersnaam is foutief</p>
+{% endif  %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+    <p>Geen toestemming voor het bezoeken van deze pagina</p>  
+  {% else %}
+    <p>Log in voor verdere toegang</p>
+  {% endif %}
+{% endif %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="{% static 'Login/master.css'%}">
+  
+  
+</head>
+
+<body>
+  <div class="wrapper fadeInDown">
+    <div id="formContent">
+      <!-- Tabs Titles -->
+      <!-- Icon -->
+      <div class="fadeIn first">
+        <img src="{% static 'Login/Schoolklaar.png' %}" id="icon" alt="User Icon" style="width: 150px; height: 150px;">
+      </div>
+      <!-- Login Form -->
+      <form method="post">
+        {% csrf_token %}
+        <input type="text" id="email" class="fadeIn second" name="username" placeholder="Emailadres">
+        <input type="password" id="password" class="fadeIn third" name="password" placeholder="Wachtwoord" >
+        <input type="submit" class="fadeIn fourth" value="Log In">
+      </form>
+      <!-- Remind Password -->
+      <div id="formFooter">
+        <a class="underlineHover" href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>
+      </div>
+    </div>
+  </div>
+</body>

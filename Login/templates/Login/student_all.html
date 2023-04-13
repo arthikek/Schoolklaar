@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Alle studenten{% endblock %}
+
+{% block content %}
+    <h1>Alle studenten</h1>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in Student %}
+                <tr>
+                    <td>{{ student.naam }}</td>
+                    <td>{{ student.achternaam }}</td>
+                    <td>{{ student.email }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

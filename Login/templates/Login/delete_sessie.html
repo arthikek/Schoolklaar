@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Bevestig verwijdering</h1>
+  <p>Weet je zeker dat je alles wil verwijderen?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Ja, verwijder</button>
+    <a href="{% url 'Login:sessie_detail' pk=sessie.pk %}" class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock %}

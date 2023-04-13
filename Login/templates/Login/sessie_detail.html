@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+<form class="form-inline mb-3" method="get">
+  <label class="mr-2">Zoek op naam:</label>
+  <input type="text" class="form-control mr-2" name="student_name" value="{{ request.GET.student_name }}">
+  <button type="submit" class="btn btn-primary">Apply filter</button>
+</form>
+
+<div class="container-md">
+    <div class="row">
+      {% for sessie in sessies%}
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <img class="card-img-top" src="{% static 'Login/Schoolklaar.png' %}" alt="Card image cap">
+            <div class="card-body">
+              <h5 class="card-title">{{ sessie.datum }}</h5>
+              <p class="card-text">Student: {{ sessie.student }}</p>
+              <p class="card-text"> Begeleider: {{ sessie.begeleider }}</p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">Inzicht: {{ sessie.inzicht }}</li>
+              <li class="list-group-item">Kennis: {{ sessie.kennis }}</li>
+              <li class="list-group-item">Werkhouding: {{ sessie.werkhouding }}</li>
+              <li class="list-group-item">Extra: {{ sessie.extra }}</li>
+            </ul>
+            <div class="card-body">
+              <a href="{% url 'Login:sessie_update' sessie.pk %}" class="card-link">Edit</a>
+              <a href="{% url 'Login:sessie_delete' sessie.pk %}" class="card-link">Delete</a>
+          </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+{% endblock %}
