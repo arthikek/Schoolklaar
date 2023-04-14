@@ -44,5 +44,3 @@ class Sessie(models.Model):
         return reverse('Sessie_detail', kwargs={'pk': self.pk})
 
 
-class Ratings(models.Model):
-    review=models.IntegerField
