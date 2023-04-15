@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Student, Employer, Sessie
+from .models import Leerling, Employer, Sessie
 
-@admin.register(Student)
+@admin.register(Leerling)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('pk','naam', 'achternaam', 'email')
     search_fields = ('naam', 'achternaam', 'email')
@@ -13,7 +13,7 @@ class EmployerAdmin(admin.ModelAdmin):
 
 @admin.register(Sessie)
 class SessieAdmin(admin.ModelAdmin):
-    list_display = ('pk','student', 'begeleider', 'inzicht', 'kennis', 'werkhouding')
+    list_display = ('pk','Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding')
     list_filter = ('inzicht', 'kennis', 'werkhouding')
     search_fields = ('student__naam', 'student__achternaam', 'begeleider__naam', 'begeleider__achternaam')
-    autocomplete_fields = ('student', 'begeleider')
+    autocomplete_fields = ('Leerling', 'begeleider')

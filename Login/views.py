@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 from .forms import StudentForm, SessieForm
-from .models import Student, Sessie, Employer
+from .models import Leerling, Sessie, Employer
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
@@ -26,7 +26,7 @@ class UpdateSessieView(UpdateView):
 
 
 class AddStudentView(CreateView):
-    model = Student
+    model = Leerling
     form_class = StudentForm
     template_name = 'Login/add_student.html'
     success_url = reverse_lazy('Login:student_all')
@@ -40,7 +40,7 @@ class AddSessieView(CreateView):
 
 
 class StudentDetailView(DetailView):
-    model = Student
+    model = Leerling
     template_name = 'Login/student_detail.html'
 
 
@@ -58,7 +58,7 @@ class SessieDetailView(DetailView):
 
 
 class StudentListView(ListView):
-    model = Student
+    model = Leerling
     template_name = 'Login/student_all.html'
     context_object_name = 'Student'
    

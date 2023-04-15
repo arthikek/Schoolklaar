@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Sessie , Employer
+from .models import Leerling, Sessie , Employer
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django.contrib.auth.forms import AuthenticationForm
@@ -19,13 +19,13 @@ class EmployerForm(forms.ModelForm):
 
 class StudentForm(forms.ModelForm):
     class Meta:
-        model = Student
+        model = Leerling
         fields = ['naam', 'achternaam', 'email']
 
 class SessieForm(forms.ModelForm):
     class Meta:
         model = Sessie
-        fields = ['student', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'extra']
+        fields = ['Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'extra']
         
 
 
