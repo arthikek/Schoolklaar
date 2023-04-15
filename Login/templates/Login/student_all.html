@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 
-{% block title %}Alle studenten{% endblock %}
+{% block title %}Alle leerlingen{% endblock %}
 
 {% block content %}
-    <h1>Alle studenten</h1>
+    <h1>Alle leerling</h1>
     <table class="styled-table">
         <thead>
             <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
+                <th>Voornaam</th>
+                <th>Achternaam</th>
                 <th>Email</th>
             </tr>
         </thead>
         <tbody>
             {% for student in Student %}
                 <tr>
-                    <td>{{ student.naam }}</td>
-                    <td>{{ student.achternaam }}</td>
-                    <td>{{ student.email }}</td>
+                    <td>{{ Leerling.naam }}</td>
+                    <td>{{ Leerling.achternaam }}</td>
+                    <td>{{ Leerling.email }}</td>
                 </tr>
             {% endfor %}
         </tbody>

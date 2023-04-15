@@ -16,7 +16,7 @@ class Employer(models.Model):
         return reverse('Employer_detail', kwargs={'pk': self.pk})
 
 
-class Student(models.Model):
+class Leerling(models.Model):
     naam = models.CharField(max_length=30)
     achternaam = models.CharField(max_length=30)
     email = models.EmailField()
@@ -25,11 +25,11 @@ class Student(models.Model):
         return f'{self.naam} {self.achternaam}'
 
     def get_absolute_url(self):
-        return reverse('student_detail', kwargs={'pk': self.pk})
+        return reverse('Leerling_detail', kwargs={'pk': self.pk})
 
 
 class Sessie(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    Leerling = models.ForeignKey(Leerling, on_delete=models.CASCADE)
     begeleider = models.ForeignKey(Employer, null=True, on_delete=models.SET_NULL)
     inzicht = models.IntegerField()
     kennis = models.IntegerField()
@@ -38,7 +38,7 @@ class Sessie(models.Model):
     datum = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Sessie {self.pk} ({self.student}, {self.begeleider})'
+        return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider})'
 
     def get_absolute_url(self):
         return reverse('Sessie_detail', kwargs={'pk': self.pk})
