@@ -48,6 +48,15 @@ class SessieListView(ListView):
     model = Sessie
     template_name = 'Login/sessie_detail.html'
     context_object_name = 'sessies'
+    
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        student_name = self.request.GET.get('student_name') # get the student_name value from the input field
+        if student_name:
+            queryset = queryset.filter(Leerling__naam=student_name) # filter the queryset by the student_name value
+        return queryset
+   
    
   
 

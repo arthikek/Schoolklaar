@@ -42,5 +42,6 @@ class Sessie(models.Model):
 
     def get_absolute_url(self):
         return reverse('Sessie_detail', kwargs={'pk': self.pk})
+    
 
 

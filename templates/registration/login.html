@@ -1,6 +1,3 @@
-{%  if form.errors %}
- <p>Je wachtwoord of gebruikersnaam is foutief</p>
-{% endif  %}
 
 {% if next %}
   {% if user.is_authenticated %}
@@ -42,6 +39,12 @@
       <!-- Remind Password -->
       <div id="formFooter">
         <a class="underlineHover" href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>
+      </div>
+      <div class="underlineHover" >
+        <h1>{%  if form.errors %}
+          <p>Je wachtwoord of gebruikersnaam is foutief</p>
+         {% endif  %}
+         </h1>
       </div>
     </div>
   </div>
