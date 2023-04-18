@@ -13,11 +13,11 @@
             </tr>
         </thead>
         <tbody>
-            {% for student in Student %}
+            {% for naam in Leerling %}
                 <tr>
-                    <td>{{ Leerling.naam }}</td>
-                    <td>{{ Leerling.achternaam }}</td>
-                    <td>{{ Leerling.email }}</td>
+                    <td>{{ naam.naam }}</td>
+                    <td>{{ naam.achternaam }}</td>
+                    <td>{{ naam.email }}</td>
                 </tr>
             {% endfor %}
         </tbody>

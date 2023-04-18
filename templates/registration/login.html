@@ -33,19 +33,31 @@
       <form method="post">
         {% csrf_token %}
         <input type="text" id="email" class="fadeIn second" name="username" placeholder="Emailadres">
-        <input type="password" id="password" class="fadeIn third" name="password" placeholder="Wachtwoord" >
-        <input type="submit" class="fadeIn fourth" value="Log In">
+        <input type="password" id="password" class="fadeIn third" name="password" placeholder="Wachtwoord">
+        <div style="display: flex; justify-content: center;">
+          <div>
+            <input type="checkbox" name="remember_me" id="remember_me" class="underlineHover">
+            <label for="remember_me"> Onthoud mij </label>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: center;">
+          <div>
+            <input type="submit" class="fadeIn fourth" value="Log In">
+          </div>
+        </div>
       </form>
       <!-- Remind Password -->
       <div id="formFooter">
         <a class="underlineHover" href="{% url 'password_reset' %}">Wachtwoord vergeten?</a>
       </div>
-      <div class="underlineHover" >
-        <h1>{%  if form.errors %}
-          <p>Je wachtwoord of gebruikersnaam is foutief</p>
-         {% endif  %}
-         </h1>
+      <div class="underlineHover">
+        <h1>
+          {%  if form.errors %}
+            <p>Je wachtwoord of gebruikersnaam is foutief</p>
+          {% endif %}
+        </h1>
       </div>
     </div>
   </div>
+  
 </body>

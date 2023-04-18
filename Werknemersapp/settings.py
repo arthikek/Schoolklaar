@@ -143,3 +143,4 @@ DATE_INPUT_FORMATS =  ['%d/%m/%Y']
 LOGIN_REDIRECT_URL=reverse_lazy('Login:add_sessie')
 LOGOUT_REDIRECT_URL = 'login'
 
+SESSION_COOKIE_AGE_REMEMBER_ME = 60 * 60 * 24 * 30  # 30 days in seconds
