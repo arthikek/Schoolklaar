@@ -20,6 +20,19 @@ class LeerlingAdmin(admin.ModelAdmin):
 
 @admin.register(Sessie)
 class SessieAdmin(admin.ModelAdmin):
-    list_display = ('Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'datum')
-    list_filter = ('inzicht', 'kennis', 'werkhouding', 'datum')
+    list_display = ('pk', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding')
+    list_filter = ('inzicht', 'kennis', 'werkhouding')
+    search_fields = ('Leerling__naam', 'Leerling__achternaam', 'begeleider__naam', 'begeleider__achternaam')
     autocomplete_fields = ('Leerling', 'begeleider')
+    fieldsets = (
+        ('Algemeen', {
+            'fields': ('Leerling', 'begeleider', 'datum'),
+        }),
+        ('Beoordeling', {
+            'fields': ('inzicht', 'kennis', 'werkhouding'),
+            'description': 'Geef een cijfer tussen 1 en 5',
+        }),
+        ('Extra', {
+            'fields': ('extra',),
+        }),
+    )
