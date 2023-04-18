@@ -35,16 +35,24 @@ class Leerling(models.Model):
 
 
 
-
 class Sessie(models.Model):
+    INZICHT_CHOICES = [(i, str(i)) for i in range(1, 6)]
+    KENNIS_CHOICES = [(i, str(i)) for i in range(1, 6)]
+    WERKHOUDING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+    
     Leerling = models.ForeignKey(Leerling, on_delete=models.CASCADE)
     begeleider = models.ForeignKey(Employer, null=True, on_delete=models.SET_NULL)
-    inzicht = models.IntegerField()
-    kennis = models.IntegerField()
-    werkhouding = models.IntegerField()
+    inzicht = models.IntegerField(choices=INZICHT_CHOICES)
+    kennis = models.IntegerField(choices=KENNIS_CHOICES)
+    werkhouding = models.IntegerField(choices=WERKHOUDING_CHOICES)
     extra = models.TextField()
     datum = models.DateTimeField(auto_now_add=True)
-    
+
+    def __str__(self):
+        return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider})'
+
+    def get_absolute_url(self):
+        return reverse('Sessie_detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider})'
