@@ -1,10 +1,7 @@
 from django.contrib import admin
-from .models import Employer, School, Leerling, Sessie
+from .models import  School, Leerling, Sessie
 
-@admin.register(Employer)
-class EmployerAdmin(admin.ModelAdmin):
-    list_display = ('naam', 'achternaam', 'email')
-    search_fields = ('naam', 'achternaam', 'email')
+
 
 @admin.register(School)
 class SchoolAdmin(admin.ModelAdmin):

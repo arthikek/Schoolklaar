@@ -2,13 +2,14 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 from .forms import StudentForm, SessieForm
-from .models import Leerling, Sessie, Employer
+from .models import Leerling, Sessie
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http.response import HttpResponse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -38,6 +39,17 @@ class AddSessieView(LoginRequiredMixin, CreateView):
     template_name = 'Login/add_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
 
+    def form_valid(self, form):
+        sessie = form.save(commit=False)
+        sessie.begeleider = self.request.user
+        sessie.save()
+        self.object = sessie  # Set self.object to the saved instance
+        return redirect(self.get_success_url())
+    
+ 
+
+    
+
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Leerling
@@ -66,3 +78,7 @@ class StudentListView(LoginRequiredMixin, ListView):
     model = Leerling
     template_name = 'Login/student_all.html'
     context_object_name = 'Leerling'
+    
+
+
+    

@@ -3,18 +3,9 @@ from turtle import mode
 from django.db import models
 from django.urls import reverse
 from django.db.models.signals import pre_save
+from django.contrib.auth.models import User
 
-class Employer(models.Model):
-    naam = models.CharField(max_length=50)
-    achternaam = models.CharField(max_length=50)
-    email = models.EmailField()
-   
 
-    def __str__(self):
-        return f'{self.naam} {self.achternaam}'
-
-    def get_absolute_url(self):
-        return reverse('Employer_detail', kwargs={'pk': self.pk})
     
 class School(models.Model):
     naam = models.CharField(max_length=30)
@@ -41,7 +32,7 @@ class Sessie(models.Model):
     WERKHOUDING_CHOICES = [(i, str(i)) for i in range(1, 6)]
     
     Leerling = models.ForeignKey(Leerling, on_delete=models.CASCADE)
-    begeleider = models.ForeignKey(Employer, null=True, on_delete=models.SET_NULL)
+    begeleider = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     inzicht = models.IntegerField(choices=INZICHT_CHOICES)
     kennis = models.IntegerField(choices=KENNIS_CHOICES)
     werkhouding = models.IntegerField(choices=WERKHOUDING_CHOICES)
