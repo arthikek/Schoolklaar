@@ -15,8 +15,9 @@ class StudentForm(forms.ModelForm):
 class SessieForm(forms.ModelForm):
     class Meta:
         model = Sessie
-        fields = ['Leerling','inzicht', 'kennis', 'werkhouding', 'extra']
-        
+        fields = ['Leerling', 'inzicht', 'kennis', 'werkhouding', 'extra', 'datum']
+        exclude = ['datum']
+
 
 
 
