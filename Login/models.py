@@ -30,7 +30,7 @@ class Leerling(models.Model):
     naam = models.CharField(max_length=30)
     achternaam = models.CharField(max_length=30)
     email = models.EmailField()
-    school = models.OneToOneField(School, null=True, on_delete=models.CASCADE)
+    school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.naam} {self.achternaam}'

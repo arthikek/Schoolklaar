@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 from .forms import StudentForm, SessieForm
-from .models import Leerling, Sessie, Begeleider, Teamleider
+from .models import Leerling, School, Sessie, Begeleider, Teamleider
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
@@ -29,6 +29,26 @@ class AddStudentView(LoginRequiredMixin, CreateView):
     form_class = StudentForm
     template_name = 'Login/add_student.html'
     success_url = reverse_lazy('Login:student_all')
+    
+    def get_form(self, form_class=None):
+        form = super(AddStudentView, self).get_form(form_class)
+        user = self.request.user
+
+        begeleider = Begeleider.objects.filter(user=user).first()
+        teamleider = Teamleider.objects.filter(user=user).first()
+
+        if begeleider:
+            schools = begeleider.school.all()
+        elif teamleider:
+            schools = [teamleider.school]
+        else:
+            schools = []
+            
+        schools_names = [school.naam for school in schools]
+
+        form.fields['school'].queryset = School.objects.filter(naam__in=schools)
+
+        return form    
 
 class AddSessieView(LoginRequiredMixin, CreateView):
     model = Sessie
