@@ -44,9 +44,8 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         else:
             schools = []
             
-        schools_names = [school.naam for school in schools]
-
-        form.fields['school'].queryset = School.objects.filter(naam__in=schools_names)
+      
+        form.fields['school'].queryset = schools
 
         return form    
 
@@ -129,20 +128,20 @@ class StudentListView(LoginRequiredMixin, ListView):
         queryset = super().get_queryset()
         user = self.request.user
 
-        # Check if the user is a Begeleider or Teamleider
+        # Check status gebruiker
         begeleider = Begeleider.objects.filter(user=user).first()
         teamleider = Teamleider.objects.filter(user=user).first()
 
-        # Get the school connected to the user
+        # Vind alle scholen van de gebruiker
         if begeleider:
             schools = begeleider.school.all()
         elif teamleider:
             schools = [teamleider.school]
         else:
-            # Return an empty queryset if the user is not a Begeleider or Teamleider
+            # Stuur lege queryset terug
             return queryset.none()
         
-        
+            #Wanneer de scholen er zijn activeer onderste regel
         if schools:
             queryset = queryset.filter(school__in=schools)
             
