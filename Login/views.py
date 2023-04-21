@@ -142,9 +142,9 @@ class StudentListView(LoginRequiredMixin, ListView):
             # Return an empty queryset if the user is not a Begeleider or Teamleider
             return queryset.none()
         
-        print(schools)
+        
         if schools:
             queryset = queryset.filter(school__in=schools)
-            print(queryset)
+            
 
         return queryset
