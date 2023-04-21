@@ -123,3 +123,28 @@ class StudentListView(LoginRequiredMixin, ListView):
     model = Leerling
     template_name = 'Login/student_all.html'
     context_object_name = 'Leerling'
+
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        # Check if the user is a Begeleider or Teamleider
+        begeleider = Begeleider.objects.filter(user=user).first()
+        teamleider = Teamleider.objects.filter(user=user).first()
+
+        # Get the school connected to the user
+        if begeleider:
+            schools = begeleider.school.all()
+        elif teamleider:
+            schools = [teamleider.school]
+        else:
+            # Return an empty queryset if the user is not a Begeleider or Teamleider
+            return queryset.none()
+        
+        print(schools)
+        if schools:
+            queryset = queryset.filter(school__in=schools)
+            print(queryset)
+
+        return queryset
