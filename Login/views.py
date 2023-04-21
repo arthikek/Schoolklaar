@@ -46,7 +46,7 @@ class AddStudentView(LoginRequiredMixin, CreateView):
             
         schools_names = [school.naam for school in schools]
 
-        form.fields['school'].queryset = School.objects.filter(naam__in=schools)
+        form.fields['school'].queryset = School.objects.filter(naam__in=schools_names)
 
         return form    
 
