@@ -48,8 +48,9 @@ class AddStudentView(LoginRequiredMixin, CreateView):
             print(teamleider)
             schools = School.objects.filter(id=teamleider.school.id)
         else:
-            schools =  School.objects.none()  # This returns an empty queryse
-
+            schools =  School.objects.none()
+            
+      
         form.fields['school'].queryset = schools
 
         return form
