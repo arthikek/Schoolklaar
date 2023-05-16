@@ -10,13 +10,15 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
-
+from django.db.models.query import QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 class DeleteSessieView(LoginRequiredMixin, DeleteView):
     model = Sessie
     template_name = 'Login/delete_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
+
 
 class UpdateSessieView(LoginRequiredMixin, UpdateView):
     model = Sessie
@@ -24,12 +26,13 @@ class UpdateSessieView(LoginRequiredMixin, UpdateView):
     template_name = 'Login/update_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
 
+
 class AddStudentView(LoginRequiredMixin, CreateView):
     model = Leerling
     form_class = StudentForm
     template_name = 'Login/add_student.html'
     success_url = reverse_lazy('Login:student_all')
-    
+
     def get_form(self, form_class=None):
         form = super(AddStudentView, self).get_form(form_class)
         user = self.request.user
@@ -38,16 +41,19 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         teamleider = Teamleider.objects.filter(user=user).first()
 
         if begeleider:
+            print(begeleider)
             schools = begeleider.school.all()
+            print(schools)
         elif teamleider:
-            schools = [teamleider.school]
+            print(teamleider)
+            schools = School.objects.filter(id=teamleider.school.id)
         else:
-            schools = []
-            
-      
+            schools =  School.objects.none()  # This returns an empty queryse
+
         form.fields['school'].queryset = schools
 
-        return form    
+        return form
+
 
 class AddSessieView(LoginRequiredMixin, CreateView):
     model = Sessie
@@ -79,9 +85,11 @@ class AddSessieView(LoginRequiredMixin, CreateView):
         form.fields['Leerling'].queryset = Leerling.objects.filter(school__in=schools)
         return form
 
+
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Leerling
     template_name = 'Login/student_detail.html'
+
 
 class SessieListView(LoginRequiredMixin, ListView):
     model = Sessie
@@ -90,7 +98,7 @@ class SessieListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        student_name = self.request.GET.get('student_name') # get the student_name value from the input field
+        student_name = self.request.GET.get('student_name')  # get the student_name value from the input field
         user = self.request.user
 
         # Check if the user is a Begeleider or Teamleider
@@ -110,20 +118,21 @@ class SessieListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(Leerling__school__in=schools)
 
         if student_name:
-            queryset = queryset.filter(Leerling__naam=student_name) # filter the queryset by the student_name value
-        
+            queryset = queryset.filter(Leerling__naam=student_name)  # filter the queryset by the student_name value
+
         return queryset
+
 
 class SessieDetailView(LoginRequiredMixin, DetailView):
     model = Sessie
     template_name = 'Login/sessie_detail.html'
+
 
 class StudentListView(LoginRequiredMixin, ListView):
     model = Leerling
     template_name = 'Login/student_all.html'
     context_object_name = 'Leerling'
 
-    
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -140,10 +149,9 @@ class StudentListView(LoginRequiredMixin, ListView):
         else:
             # Stuur lege queryset terug
             return queryset.none()
-        
-            #Wanneer de scholen er zijn activeer onderste regel
+
+            # Wanneer de scholen er zijn activeer onderste regel
         if schools:
             queryset = queryset.filter(school__in=schools)
-            
 
         return queryset
