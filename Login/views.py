@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
-
+from django.db.models.query import QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 class DeleteSessieView(LoginRequiredMixin, DeleteView):
@@ -38,11 +38,14 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         teamleider = Teamleider.objects.filter(user=user).first()
 
         if begeleider:
+            print(begeleider)
             schools = begeleider.school.all()
+            print(schools)
         elif teamleider:
-            schools = [teamleider.school]
+            print(teamleider)
+            schools = School.objects.filter(id=teamleider.school.id)
         else:
-            schools = []
+            schools =  School.objects.none()
             
       
         form.fields['school'].queryset = schools
