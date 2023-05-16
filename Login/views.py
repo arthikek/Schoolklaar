@@ -119,7 +119,7 @@ class SessieListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(Leerling__school__in=schools)
 
         if student_name:
-            queryset = queryset.filter(Leerling__naam=student_name)  # filter the queryset by the student_name value
+            queryset = queryset.filter(Leerling__naam__istartswith=student_name)  # filter the queryset by the student_name value
 
         return queryset
 
