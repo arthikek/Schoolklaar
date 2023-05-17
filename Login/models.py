@@ -4,40 +4,83 @@ from django.db import models
 from django.urls import reverse
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
+from django.db import models
+
 
 class School(models.Model):
     naam = models.CharField(max_length=30)
     grootte = models.IntegerField()
 
     def __str__(self) -> str:
-        return f'{self.naam}'
+        return self.naam
+
+
+class Niveau(models.Model):
+    naam = models.CharField(max_length=50)
+    scholen = models.ManyToManyField(School, related_name='niveaus')
+
+    def __str__(self):
+        return self.naam
+
+
+class Vak(models.Model):
+    naam = models.CharField(max_length=50)
+    niveaus = models.ManyToManyField(Niveau, related_name='vakken')
+    
+    def __str__(self):
+        return self.naam
+
+
+class Klas(models.Model):
+    naam = models.IntegerField()
+    niveaus = models.ManyToManyField(Niveau, related_name='klassen')
+    vakken = models.ManyToManyField(Vak, related_name='klassen')
+
+    def __str__(self):
+        return str(self.naam)
+
+
+class Materiaal(models.Model):
+    titel = models.CharField(max_length=100)
+    bestand = models.FileField(upload_to='materialen/')
+    vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
+    niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
+    klas = models.ForeignKey(Klas, on_delete=models.CASCADE)
+    omschrijving = models.TextField(default='nog te schrijven')
+
+    def __str__(self):
+        return self.titel
+
 
 class Begeleider(models.Model):
-    user = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
-    school = models.ManyToManyField(School)
+    gebruiker = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
+    scholen = models.ManyToManyField(School, related_name='begeleiders')
 
     def __str__(self) -> str:
-        return f'{self.user}'
+        return str(self.gebruiker)
+
 
 class Teamleider(models.Model):
-    user = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
+    gebruiker = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
     school = models.ForeignKey(School, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f'{self.user}'
+        return str(self.gebruiker)
+
 
 class Leerling(models.Model):
     naam = models.CharField(max_length=30)
     achternaam = models.CharField(max_length=30)
     email = models.EmailField()
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
+    klas = models.ForeignKey(Klas, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.naam} {self.achternaam}'
 
     def get_absolute_url(self):
         return reverse('Leerling_detail', kwargs={'pk': self.pk})
-
+    
 class Sessie(models.Model):
     INZICHT_CHOICES = [(i, str(i)) for i in range(1, 6)]
     KENNIS_CHOICES = [(i, str(i)) for i in range(1, 6)]
@@ -50,10 +93,12 @@ class Sessie(models.Model):
     werkhouding = models.IntegerField(choices=WERKHOUDING_CHOICES)
     extra = models.TextField()
     datum = models.DateTimeField(auto_now_add=True)
-    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True)
+    vak = models.ForeignKey(Vak, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider.username})'
 
     def get_absolute_url(self):
         return reverse('Sessie_detail', kwargs={'pk': self.pk})
+

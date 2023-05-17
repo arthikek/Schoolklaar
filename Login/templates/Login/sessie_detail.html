@@ -4,8 +4,8 @@
 
 {% load static %}
 <form class="form-inline mb-3" method="get">
-  <label class="mr-2">Zoek op naam:</label>
-  <input type="text" class="form-control mr-2" name="student_name" >
+  <label class="mr-2" for="student_name">Zoek op naam:</label>
+  <input type="text" class="form-control mr-2" name="student_name" id="student_name">
   <button type="submit" class="btn btn-primary">Zoek</button>
 </form>
 
@@ -22,6 +22,7 @@
               <p class="card-text"> School: {{ sessie.Leerling.school }}</p>
             </div>
             <ul class="list-group list-group-flush">
+              <li class="list-group-item">Vak: {{ sessie.vak }}</li>
               <li class="list-group-item">Inzicht: {{ sessie.inzicht }}</li>
               <li class="list-group-item">Kennis: {{ sessie.kennis }}</li>
               <li class="list-group-item">Werkhouding: {{ sessie.werkhouding }}</li>

@@ -1,8 +1,8 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
-from .forms import StudentForm, SessieForm
-from .models import Leerling, School, Sessie, Begeleider, Teamleider
+from .forms import StudentForm, SessieForm, MateriaalForm
+from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
@@ -26,34 +26,36 @@ class UpdateSessieView(LoginRequiredMixin, UpdateView):
     template_name = 'Login/update_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
 
-
 class AddStudentView(LoginRequiredMixin, CreateView):
     model = Leerling
     form_class = StudentForm
     template_name = 'Login/add_student.html'
     success_url = reverse_lazy('Login:student_all')
-
+    
     def get_form(self, form_class=None):
         form = super(AddStudentView, self).get_form(form_class)
-        user = self.request.user
+        gebruiker = self.request.user
 
-        begeleider = Begeleider.objects.filter(user=user).first()
-        teamleider = Teamleider.objects.filter(user=user).first()
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
         if begeleider:
-            print(begeleider)
-            schools = begeleider.school.all()
-            print(schools)
+            scholen = begeleider.scholen.all()
         elif teamleider:
-            print(teamleider)
-            schools = School.objects.filter(id=teamleider.school.id)
+            scholen = School.objects.filter(id=teamleider.school.id)
         else:
-            schools =  School.objects.none()
-            
-      
-        form.fields['school'].queryset = schools
+            scholen = School.objects.none()
+
+        form.fields['school'].queryset = scholen
 
         return form
+
+
+class AddMateriaalView(CreateView):
+    model = Materiaal
+    fields = ['titel',  'vak', 'niveau', 'klas', 'omschrijving','bestand']
+    template_name = 'Login/add_materiaal.html'
+    success_url = '/'  # Redirect to the home page
 
 
 class AddSessieView(LoginRequiredMixin, CreateView):
@@ -61,103 +63,101 @@ class AddSessieView(LoginRequiredMixin, CreateView):
     form_class = SessieForm
     template_name = 'Login/add_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
-
-    def form_valid(self, form):
-        sessie = form.save(commit=False)
-        sessie.begeleider = self.request.user
-        sessie.save()
-        self.object = sessie  # Set self.object to the saved instance
-        return redirect(self.get_success_url())
-
+    
+    
     def get_form(self, form_class=None):
         form = super(AddSessieView, self).get_form(form_class)
-        user = self.request.user
+        gebruiker = self.request.user
 
-        begeleider = Begeleider.objects.filter(user=user).first()
-        teamleider = Teamleider.objects.filter(user=user).first()
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
         if begeleider:
-            schools = begeleider.school.all()
+            scholen = begeleider.scholen.all()
         elif teamleider:
-            schools = [teamleider.school]
+            scholen = [teamleider.school]
         else:
-            schools = []
+            scholen = []
 
-        form.fields['Leerling'].queryset = Leerling.objects.filter(school__in=schools)
+        form.fields['Leerling'].queryset = Leerling.objects.filter(school__in=scholen)
+
         return form
-
-
-class StudentDetailView(LoginRequiredMixin, DetailView):
-    model = Leerling
-    template_name = 'Login/student_detail.html'
 
 
 class SessieListView(LoginRequiredMixin, ListView):
     model = Sessie
     template_name = 'Login/sessie_detail.html'
     context_object_name = 'sessies'
-
+    
+    
     def get_queryset(self):
         queryset = super().get_queryset()
-        student_name = self.request.GET.get('student_name')  # get the student_name value from the input field
-        user = self.request.user
+        student_name = self.request.GET.get('student_name')  
+        gebruiker = self.request.user
 
-        # Check if the user is a Begeleider or Teamleider
-        begeleider = Begeleider.objects.filter(user=user).first()
-        teamleider = Teamleider.objects.filter(user=user).first()
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
-        # Get the school connected to the user
         if begeleider:
-            schools = begeleider.school.all()
+            scholen = begeleider.scholen.all()
         elif teamleider:
-            schools = [teamleider.school]
+            scholen = [teamleider.school]
         else:
-            # Return an empty queryset if the user is not a Begeleider or Teamleider
             return queryset.none()
 
-        if schools:
-            queryset = queryset.filter(Leerling__school__in=schools)
+        if scholen:
+            queryset = queryset.filter(Leerling__school__in=scholen)
 
         if student_name:
-            queryset = queryset.filter(Leerling__naam__istartswith=student_name)  # filter the queryset by the student_name value
+            queryset = queryset.filter(Leerling__naam__istartswith=student_name)
 
         return queryset
-
-
-class SessieDetailView(LoginRequiredMixin, DetailView):
-    model = Sessie
-    template_name = 'Login/sessie_detail.html'
 
 
 class StudentListView(LoginRequiredMixin, ListView):
     model = Leerling
     template_name = 'Login/student_all.html'
     context_object_name = 'Leerling'
-
     def get_queryset(self):
         queryset = super().get_queryset()
-        print(queryset)
-        student_name = self.request.GET.get('student_name')  # get the student_name value from the input field
-        user = self.request.user
+        student_name = self.request.GET.get('student_name') 
+        gebruiker = self.request.user
 
-        # Check status gebruiker
-        begeleider = Begeleider.objects.filter(user=user).first()
-        teamleider = Teamleider.objects.filter(user=user).first()
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
-        # Vind alle scholen van de gebruiker
         if begeleider:
-            schools = begeleider.school.all()
+            scholen = begeleider.scholen.all()
         elif teamleider:
-            schools = [teamleider.school]
+            scholen = [teamleider.school]
         else:
-            # Stuur lege queryset terug
             return queryset.none()
 
-            # Wanneer de scholen er zijn activeer onderste regel
-        if schools:
-            queryset = queryset.filter(school__in=schools)
+        if scholen:
+            queryset = queryset.filter(school__in=scholen)
 
         if student_name:
-            queryset = queryset.filter(naam__istartswith=student_name)  # filter the queryset by the student_name valu
+            queryset = queryset.filter(naam__istartswith=student_name)  # filter the queryset by the student_name value
             
         return queryset
+
+class StudentDetailView(LoginRequiredMixin, DetailView):
+    model = Leerling
+    template_name = 'Login/student_detail.html'
+    
+    
+class SessieDetailView(LoginRequiredMixin, DetailView):
+    model = Sessie
+    template_name = 'Login/sessie_detail.html'
+    
+    
+    
+def upload_file(request):
+    if request.method == "POST":
+        form = MateriaalForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/')  # Redirect to the home page
+    else:
+        form = MateriaalForm()
+    return render(request, "upload.html", {"form": form})
