@@ -10,7 +10,7 @@ from django.contrib.auth.forms import AuthenticationForm
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Leerling
-        fields = ['naam', 'achternaam', 'email', 'school','klas']
+        fields = ['naam', 'achternaam', 'email', 'school','niveau','klas']
 
 class SessieForm(forms.ModelForm):
     class Meta:

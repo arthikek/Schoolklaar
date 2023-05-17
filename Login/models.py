@@ -74,6 +74,7 @@ class Leerling(models.Model):
     email = models.EmailField()
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
     klas = models.ForeignKey(Klas, null=True, on_delete=models.SET_NULL)
+    niveau = models.ForeignKey(Niveau, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.naam} {self.achternaam}'
