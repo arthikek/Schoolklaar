@@ -136,6 +136,8 @@ class StudentListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        print(queryset)
+        student_name = self.request.GET.get('student_name')  # get the student_name value from the input field
         user = self.request.user
 
         # Check status gebruiker
@@ -155,4 +157,7 @@ class StudentListView(LoginRequiredMixin, ListView):
         if schools:
             queryset = queryset.filter(school__in=schools)
 
+        if student_name:
+            queryset = queryset.filter(naam__istartswith=student_name)  # filter the queryset by the student_name valu
+            
         return queryset
