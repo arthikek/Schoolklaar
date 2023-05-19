@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
-# settings.py
 from django.urls import reverse_lazy
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,8 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9efm@rcp(9f@cshbf+z7b))i!hhrovtjh4gkj9v=5^t$qgg@1y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = False
 ALLOWED_HOSTS = ["178.79.150.108", "178-79-150-108.ip.linodeusercontent.com", "lvs.schoolklaar.nl","127.0.0.1"]
 
 
@@ -128,6 +127,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+#MEDIAURL
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

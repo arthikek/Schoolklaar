@@ -46,7 +46,7 @@ class Materiaal(models.Model):
     vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
     niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
     klas = models.ForeignKey(Klas, on_delete=models.CASCADE)
-    omschrijving = models.TextField(default='nog te schrijven')
+    omschrijving = models.TextField(default='Schrijf de beschrijvingen zo uitgebreid mogelijk. We gaan dit later verwerken in een zoeksysteem')
 
     def __str__(self):
         return self.titel
@@ -98,7 +98,7 @@ class Sessie(models.Model):
     vak = models.ForeignKey(Vak, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider.username})'
+        return f'Sessie {self.pk} ({self.Leerling}, {self.begeleider})' 
 
     def get_absolute_url(self):
         return reverse('Sessie_detail', kwargs={'pk': self.pk})

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load static %}
+<form class="form-inline mb-3" method="get">
+  <label class="mr-2" for="student_name">Zoek op naam:</label>
+  <input type="text" class="form-control mr-2" name="student_name" id="student_name">
+  <button type="submit" class="btn btn-primary">Zoek</button>
+</form>
+
+<div class="container-md">
+    <div class="row">
+      {% for materiaal in object_list %}
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <img class="card-img-top" src="{% static 'Login/Schoolklaar.png' %}" alt="Card image cap">
+            <div class="card-body">
+              <h5 class="card-title">{{ materiaal.titel }}</h5>
+              <p class="card-text"> Niveau: {{ materiaal.niveau }}</p>
+              <p class="card-text"> Vak: {{ materiaal.vak}}</p>
+              <p class="card-text"> Klas: {{ materiaal.klas }}</p>
+              <p class="card-text"> Omschrijving: {{ materiaal.omschrijving }}</p>
+            </div>
+           
+            <div class="card-body">
+              <a href="{% url 'Login:materiaal_update' materiaal.pk %}" class="card-link">Wijzig</a>
+              <a href="{% url 'Login:materiaal_delete' materiaal.pk %}" class="card-link">Verwijder</a>
+              <a href="{% url 'Login:materiaal_download' materiaal.pk %}" class="card-link">Download</a>
+              
+
+          </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+{% endblock %}

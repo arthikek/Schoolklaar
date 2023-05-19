@@ -12,6 +12,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
 from django.db.models.query import QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render  
+from django.http import HttpResponse , FileResponse
+
+
+
+def get(request, pk):
+    document = get_object_or_404(Materiaal, pk=pk)
+    response = HttpResponse(document.bestand, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{document.bestand.name}"'
+    return response
+
 
 
 class DeleteSessieView(LoginRequiredMixin, DeleteView):
@@ -20,11 +31,32 @@ class DeleteSessieView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('Login:sessie_all')
 
 
+
+
+
+
+class DeleteMateriaalView(LoginRequiredMixin, DeleteView):
+    model = Materiaal
+    template_name = 'Login/delete_materiaal.html'
+    success_url = reverse_lazy('Login:materiaal_all')
+
+class UpdateMateriaalView(LoginRequiredMixin, UpdateView):
+    model = Materiaal
+    form_class = MateriaalForm
+    template_name = 'Login/update_materiaal.html'
+    success_url = reverse_lazy('Login:materiaal_all')
+
+ 
+
 class UpdateSessieView(LoginRequiredMixin, UpdateView):
     model = Sessie
     form_class = SessieForm
     template_name = 'Login/update_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
+    
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 class AddStudentView(LoginRequiredMixin, CreateView):
     model = Leerling
@@ -42,7 +74,7 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         if begeleider:
             scholen = begeleider.scholen.all()
         elif teamleider:
-            scholen = School.objects.filter(id=teamleider.school.id)
+            scholen = School.objects.filter(id=teamleider.school.pk)
         else:
             scholen = School.objects.none()
 
@@ -51,11 +83,11 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         return form
 
 
-class AddMateriaalView(CreateView):
+class AddMateriaalView(LoginRequiredMixin, CreateView):
     model = Materiaal
-    fields = ['titel',  'vak', 'niveau', 'klas', 'omschrijving','bestand']
+    form_class = MateriaalForm
     template_name = 'Login/add_materiaal.html'
-    success_url = '/'  # Redirect to the home page
+    success_url = reverse_lazy('Login:materiaal_all')                            
 
 
 class AddSessieView(LoginRequiredMixin, CreateView):
@@ -114,6 +146,25 @@ class SessieListView(LoginRequiredMixin, ListView):
         return queryset
 
 
+class MateriaalListView(LoginRequiredMixin, ListView):
+    model = Materiaal
+    template_name = 'Login/materiaal_all.html'
+    context_object_name = 'materiaal'
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        student_name = self.request.GET.get('student_name')  
+        gebruiker = self.request.user
+        print(gebruiker)
+
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        if begeleider:
+            return Materiaal.objects.all()
+        else:
+            return Materiaal.objects.none()
+
+    
+
 class StudentListView(LoginRequiredMixin, ListView):
     model = Leerling
     template_name = 'Login/student_all.html'
@@ -151,13 +202,9 @@ class SessieDetailView(LoginRequiredMixin, DetailView):
     template_name = 'Login/sessie_detail.html'
     
     
-    
-def upload_file(request):
-    if request.method == "POST":
-        form = MateriaalForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/')  # Redirect to the home page
-    else:
-        form = MateriaalForm()
-    return render(request, "upload.html", {"form": form})
+
+class MateriaalDetailView(LoginRequiredMixin, DetailView):
+    model = Materiaal
+    template_name = 'Login/materiaal_detail.html'
+    context_object_name = 'materiaal'
+
