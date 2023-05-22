@@ -138,10 +138,10 @@ class SessieListView(LoginRequiredMixin, ListView):
             return queryset.none()
 
         if scholen:
-            queryset = queryset.filter(Leerling__school__in=scholen)
+            queryset = queryset.order_by('-datum').filter(Leerling__school__in=scholen)
 
         if student_name:
-            queryset = queryset.filter(Leerling__naam__istartswith=student_name)
+            queryset = queryset.order_by('-datum').filter(Leerling__naam__istartswith=student_name)
 
         return queryset
 
@@ -155,7 +155,7 @@ class MateriaalListView(LoginRequiredMixin, ListView):
         queryset = super().get_queryset()
         student_name = self.request.GET.get('student_name')  
         gebruiker = self.request.user
-        print(gebruiker)
+            
 
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
         if begeleider:
