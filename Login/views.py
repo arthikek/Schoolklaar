@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
-from .forms import StudentForm, SessieForm, MateriaalForm
+from .forms import StudentForm, SessieForm, MateriaalForm,SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
@@ -50,7 +50,7 @@ class UpdateMateriaalView(LoginRequiredMixin, UpdateView):
 
 class UpdateSessieView(LoginRequiredMixin, UpdateView):
     model = Sessie
-    form_class = SessieForm
+    form_class = SessieFormUpdate
     template_name = 'Login/update_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
     

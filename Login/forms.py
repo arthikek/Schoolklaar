@@ -18,7 +18,10 @@ class SessieForm(forms.ModelForm):
         fields = ['Leerling', 'inzicht', 'kennis', 'werkhouding', 'vak','extra', 'datum']
         
 
-
+class SessieFormUpdate(forms.ModelForm):
+    class Meta: 
+        model = Sessie
+        fields = '__all__'
 
 
 class MateriaalForm(forms.ModelForm):
