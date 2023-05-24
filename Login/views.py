@@ -96,7 +96,6 @@ class AddSessieView(LoginRequiredMixin, CreateView):
     template_name = 'Login/add_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
     
-    
     def get_form(self, form_class=None):
         form = super(AddSessieView, self).get_form(form_class)
         gebruiker = self.request.user
@@ -114,6 +113,10 @@ class AddSessieView(LoginRequiredMixin, CreateView):
         form.fields['Leerling'].queryset = Leerling.objects.filter(school__in=scholen)
 
         return form
+
+    def form_valid(self, form):
+        form.instance.begeleider = self.request.user
+        return super().form_valid(form)
 
 
 class SessieListView(LoginRequiredMixin, ListView):
