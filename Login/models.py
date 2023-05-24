@@ -93,7 +93,7 @@ class Sessie(models.Model):
     kennis = models.IntegerField(choices=KENNIS_CHOICES)
     werkhouding = models.IntegerField(choices=WERKHOUDING_CHOICES)
     extra = models.TextField()
-    datum = models.DateTimeField(auto_now_add=True)
+    datum = models.DateField(default=datetime.now)
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True)
     vak = models.ForeignKey(Vak, null=True, on_delete=models.SET_NULL)
 
