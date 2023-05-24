@@ -162,7 +162,7 @@ class MateriaalListView(LoginRequiredMixin, ListView):
 
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
         if begeleider:
-            return Materiaal.objects.all()
+            return Materiaal.objects.filter(leerling__isnull=True)
         else:
             return Materiaal.objects.none()
 

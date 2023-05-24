@@ -1,34 +1,31 @@
 {% extends 'base.html' %}
 
-{% block title %}Alle leerlingen{% endblock %}
-
 {% block content %}
-    
-<form class="form-inline mb-3" method="get">
-    <label for="student_name" class="mr-2">Zoek op naam:</label>
-    <input type="text" class="form-control mr-2" id="student_name" name="student_name">
-    <button type="submit" class="btn btn-primary">Zoek</button>
-</form>
+<!-- Add your form here if needed -->
 
-<h1>Alle leerling</h1>
-    <table class="styled-table">
-        <thead>
-            <tr>
-                <th>Voornaam</th>
-                <th>Achternaam</th>
-                <th>Email</th>
-                <th>School</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for naam in Leerling %}
-                <tr>
-                    <td>{{ naam.naam }}</td>
-                    <td>{{ naam.achternaam }}</td>
-                    <td>{{ naam.email }}</td>
-                    <td>{{ naam.school }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container">
+  <h1>Alle leerlingen</h1>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Voornaam</th>
+        <th>Achternaam</th>
+        <th>Email</th>
+        <th>School</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for leerling in object_list %}
+        <tr>
+          <td>{{ leerling.naam }}</td>
+          <td>{{ leerling.achternaam }}</td>
+          <td>{{ leerling.email }}</td>
+          <td>{{ leerling.school }}</td>
+          <td><a href="{% url 'Login:student_detail' leerling.pk %}">Details</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

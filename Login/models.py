@@ -40,17 +40,6 @@ class Klas(models.Model):
         return str(self.naam)
 
 
-class Materiaal(models.Model):
-    titel = models.CharField(max_length=100)
-    bestand = models.FileField(upload_to='materialen/')
-    vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
-    niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
-    klas = models.ForeignKey(Klas, on_delete=models.CASCADE)
-    omschrijving = models.TextField(default='Schrijf de beschrijvingen zo uitgebreid mogelijk. We gaan dit later verwerken in een zoeksysteem')
-
-    def __str__(self):
-        return self.titel
-
 
 class Begeleider(models.Model):
     gebruiker = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
@@ -75,12 +64,30 @@ class Leerling(models.Model):
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
     klas = models.ForeignKey(Klas, null=True, on_delete=models.SET_NULL)
     niveau = models.ForeignKey(Niveau, null=True, on_delete=models.SET_NULL)
-
+    
+    
     def __str__(self):
         return f'{self.naam} {self.achternaam}'
 
     def get_absolute_url(self):
         return reverse('Leerling_detail', kwargs={'pk': self.pk})
+    
+    
+class Materiaal(models.Model):
+    titel = models.CharField(max_length=100)
+    bestand = models.FileField(upload_to='materialen/')
+    vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
+    niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
+    klas = models.ForeignKey(Klas, on_delete=models.CASCADE)
+    omschrijving = models.TextField(default='Schrijf de beschrijvingen zo uitgebreid mogelijk. We gaan dit later verwerken in een zoeksysteem')
+    leerling = models.ForeignKey(
+        Leerling, 
+        null=True, 
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='persoonlijk_materiaal'
+    )
+    # null and blank are set to True w
     
 class Sessie(models.Model):
     INZICHT_CHOICES = [(i, str(i)) for i in range(1, 6)]

@@ -17,7 +17,7 @@
             <img class="card-img-top" src="{% static 'Login/Schoolklaar.png' %}" alt="Card image cap">
             <div class="card-body">
               <h5 class="card-title">{{ sessie.datum }}</h5>
-              <p class="card-text">Student: {{ sessie.Leerling }}</p>
+              <p class="card-text">Leerling:<a href="{% url 'Login:student_detail' sessie.Leerling.pk %}"> {{sessie.Leerling}}  </a></p>
               <p class="card-text"> Begeleider: {{ sessie.begeleider }}</p>
               <p class="card-text"> School: {{ sessie.Leerling.school }}</p>
               <p class="card-text"> Niveau: {{ sessie.Leerling.niveau }}</p>

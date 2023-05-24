@@ -1,9 +1,64 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-    <h1>{{ Leerling.naam }} {{ Leerling.achternaam }}</h1>
-   
-    <p>Email: {{ Leerling.email }}</p>
+
+{% load static %}
+
+    <h2>Persoonlijke bestanden leerling</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Titel</th>
+                <th>Beschrijving</th>  <!-- I added this column for the description of the material -->
+                <th>Download</th>  <!-- Added a new column for the download link -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for materiaal in object.persoonlijk_materiaal.all %}
+                <tr>
+                    <td>{{ materiaal.titel }}</td>
+                    <td>{{ materiaal.omschrijving }}</td>  <!-- I added this column for the description of the material -->
+                    <td>
+                        <a href="{% url 'Login:materiaal_download' materiaal.pk %}" class="btn btn-primary">Download</a>
+                    </td>  <!-- Placed the download link within a Bootstrap button -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+
+
+<div class="container">
+    <h1>{{ object.naam }}  {{ object.achternaam }}</h1>
+    <p>Email: {{ object.email }}</p>
+
+    <h2>Sessions</h2>
+    <div class="row">
+      {% for sessie in object.sessie_set.all %}
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <img class="card-img-top" src="{% static 'Login/Schoolklaar.png' %}" alt="Card image cap">
+            <div class="card-body">
+              <h5 class="card-title">{{ sessie.datum }}</h5>
+              <p class="card-text">Leerling:<a href="{% url 'Login:student_detail' leerling.pk %}"> {{sessie.Leerling.naam}}  </a></p>
+              <p class="card-text"> Begeleider: {{ sessie.begeleider }}</p>
+              <p class="card-text"> School: {{ sessie.Leerling.school }}</p>
+              <p class="card-text"> Niveau: {{ sessie.Leerling.niveau }}</p>
+              <p class="card-text"> Klas: {{ sessie.Leerling.klas }}</p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">Vak: {{ sessie.vak }}</li>
+              <li class="list-group-item">Inzicht: {{ sessie.inzicht }}</li>
+              <li class="list-group-item">Kennis: {{ sessie.kennis }}</li>
+              <li class="list-group-item">Werkhouding: {{ sessie.werkhouding }}</li>
+              <li class="list-group-item">Extra: {{ sessie.extra }}</li>
+            </ul>
+            <div class="card-body">
+              <a href="{% url 'Login:sessie_update' sessie.pk %}" class="card-link">Edit</a>
+              <a href="{% url 'Login:sessie_delete' sessie.pk %}" class="card-link">Delete</a>
+          </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
 {% endblock %}
