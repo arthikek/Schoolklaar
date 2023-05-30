@@ -1,8 +1,12 @@
+from operator import is_
+from typing import Any
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
+from pyrsistent import v
+from yaml import serialize
 from .forms import StudentForm, SessieForm, MateriaalForm,SessieFormUpdate
-from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal
+from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal,Vak,Klas,Niveau
 from django.shortcuts import render
 from django.views.generic.edit import DeleteView
 from django.views.generic.edit import UpdateView
@@ -13,9 +17,76 @@ from django.http.response import HttpResponse
 from django.db.models.query import QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render  
-from django.http import HttpResponse , FileResponse
+from django.http import HttpRequest, HttpResponse , FileResponse
+from django.http import JsonResponse
+from django.core import serializers
+from .serializers import SessieSerializer
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Begeleider, Teamleider
+from .serializers import SessieSerializer
 
 
+class SessieListViewAPI(APIView):
+    """
+    List all sessies, or create a new sessie.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        sessies = Sessie.objects.all()
+        gebruiker = self.request.user
+
+        if not gebruiker.is_authenticated:
+            return Response({'error': 'You need to be authenticated to access this endpoint.'})
+
+        
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+       
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
+        print(teamleider)
+        if begeleider:
+            scholen = begeleider.scholen.all()
+            print('begeleider:scholen',scholen)
+        elif teamleider:
+            scholen = [teamleider.school]
+            print(scholen)
+        else:
+            return Response([])
+
+        if scholen:
+            sessies = sessies.filter(Leerling__school__in=scholen)
+            print(sessies)
+
+    # Get the school and begeleider query parameters
+        query_school_name = self.request.GET.get('school')
+        query_begeleider_name = self.request.GET.get('begeleider')
+        query_vak_name = self.request.GET.get('vak')
+        query_niveau_name = self.request.GET.get('niveau')
+        query_klas_name = self.request.GET.get('klas')
+        
+        print(query_klas_name)
+    # If the query parameters are provided, filter the sessions accordingly
+        if query_school_name:
+            sessies = sessies.filter(school__naam=query_school_name)
+        if query_begeleider_name:
+            sessies = sessies.filter(begeleider__username=query_begeleider_name)
+        if query_vak_name:  
+            sessies = sessies.filter(vak__naam=query_vak_name)
+            print(sessies)
+        if query_niveau_name:
+            sessies = sessies.filter(Leerling__niveau__naam=query_niveau_name)
+        if query_klas_name:
+            sessies = sessies.filter(Leerling__klas__naam__icontains=query_klas_name)
+
+        serializer = SessieSerializer(sessies, many=True)
+        return Response(serializer.data)
+
+
+
+    
 
 def get(request, pk):
     document = get_object_or_404(Materiaal, pk=pk)
@@ -119,34 +190,24 @@ class AddSessieView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+
+
+
+
 class SessieListView(LoginRequiredMixin, ListView):
     model = Sessie
     template_name = 'Login/sessie_detail.html'
     context_object_name = 'sessies'
+
     
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        student_name = self.request.GET.get('student_name')  
-        gebruiker = self.request.user
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        models = ['School', 'Begeleider', 'Vak', 'Leerling', 'Niveau','Klas']
+        for model in models:
+            context[model.lower() + 's'] = globals()[model].objects.all()
+        return context
 
-        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
-        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
-        if begeleider:
-            scholen = begeleider.scholen.all()
-        elif teamleider:
-            scholen = [teamleider.school]
-        else:
-            return queryset.none()
-
-        if scholen:
-            queryset = queryset.order_by('-datum').filter(Leerling__school__in=scholen)
-
-        if student_name:
-            queryset = queryset.order_by('-datum').filter(Leerling__naam__istartswith=student_name)
-
-        return queryset
 
 
 class MateriaalListView(LoginRequiredMixin, ListView):

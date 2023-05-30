@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["178.79.150.108", "178-79-150-108.ip.linodeusercontent.com", "l
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     "crispy_bootstrap4",
     'crispy_forms',
     'Login.apps.MyAppConfig',

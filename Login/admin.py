@@ -18,13 +18,13 @@ class LeerlingAdmin(admin.ModelAdmin):
 
 @admin.register(Sessie)
 class SessieAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding')
-    list_filter = ('inzicht', 'kennis', 'werkhouding')
-    search_fields = ('Leerling__naam', 'Leerling__achternaam', 'begeleider__username')
-    autocomplete_fields = ('Leerling', 'begeleider')
+    list_display = ('pk', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'school')
+    list_filter = ('inzicht', 'kennis', 'werkhouding', 'school')
+    search_fields = ('Leerling__naam', 'Leerling__achternaam', 'begeleider__username', 'school__naam', 'vak__naam')
+    autocomplete_fields = ('Leerling', 'begeleider', 'school')
     fieldsets = (
         ('Algemeen', {
-            'fields': ('Leerling', 'begeleider'),
+            'fields': ('Leerling', 'begeleider', 'school', 'vak', 'datum'),
         }),
         ('Beoordeling', {
             'fields': ('inzicht', 'kennis', 'werkhouding'),
@@ -34,7 +34,8 @@ class SessieAdmin(admin.ModelAdmin):
             'fields': ('extra',),
         }),
     )
-    exclude = ['datum']
+ 
+
 
 
 @admin.register(Begeleider)

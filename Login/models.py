@@ -5,6 +5,11 @@ from django.urls import reverse
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 from django.db import models
+from rest_framework.views import APIView
+
+
+
+
 
 
 class School(models.Model):
@@ -88,7 +93,8 @@ class Materiaal(models.Model):
         related_name='persoonlijk_materiaal'
     )
     # null and blank are set to True w
-    
+       
+           
 class Sessie(models.Model):
     INZICHT_CHOICES = [(i, str(i)) for i in range(1, 6)]
     KENNIS_CHOICES = [(i, str(i)) for i in range(1, 6)]

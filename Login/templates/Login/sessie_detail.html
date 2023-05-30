@@ -1,43 +1,142 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
 {% load static %}
+{% block javascript %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  function resetFilters() {
+    $('#school').val('');        // Clear the selected school
+    $('#begeleider').val('');    // Clear the selected begeleider
+    $('#vak').val('');           // Clear the selected vak
+    $('#niveau').val('');        // Clear the selected niveau
+    $('#klas').val('');         // Clear the selected klas
+    // Call the updateSessions() function to update the sessions based on the cleared filters
+    updateSessions();
+  }
+  
+
+  function updateSessions() {
+      var school = $('#school').val();
+      var begeleider = $('#begeleider').val();
+      var vak = $('#vak').val();
+      var niveau = $('#niveau').val();
+      var klas = $('#klas').val();
+
+      $.ajax({
+          url: "{% url 'Login:api_sessie' %}",
+          data: {
+              'school': school,
+              'begeleider': begeleider,
+              'vak': vak,
+              'niveau': niveau,
+              'klas': klas,
+          },
+          type:'get',
+          dataType: 'json',
+          success: function (data) {
+            console.log(data);
+            var sessies = data;
+            
+            // Empty the card container before appending new cards
+            $('#cardContainer').empty();
+
+            // Loop through each session and create a card
+            sessies.forEach(function(sessie) {
+              // print each session for debugging
+              var html = '<div class="col-md-4 mb-3"><div class="card">';
+              html += '<img class="card-img-top" src="/static/Login/Schoolklaar.png" alt="Card image cap">';
+              html += '<div class="card-body">';
+              html += '<h5 class="card-title">' + sessie.datum + '</h5>';
+              html += '<p class="card-text">Leerling:<a href="/Login/student_detail/' + sessie.Leerling.naam + '"> ' + sessie.Leerling.naam +  '  </a></p>';
+              html += '<p class="card-text"> Begeleider: ' + sessie.begeleider.username + '</p>';
+              html += '<p class="card-text"> School: ' + sessie.school.naam + '</p>';
+              html += '</div>';
+              html += '<ul class="list-group list-group-flush">';
+              html += '<li class="list-group-item">Vak: ' + sessie.vak.naam + '</li>';
+              html += '<li class="list-group-item">Inzicht: ' + sessie.inzicht + '</li>';
+              html += '<li class="list-group-item">Kennis: ' + sessie.kennis + '</li>';
+              html += '<li class="list-group-item">Werkhouding: ' + sessie.werkhouding + '</li>';
+              html += '<li class="list-group-item">Extra: ' + sessie.extra + '</li>';
+              html += '</ul>';
+              html += '<div class="card-body">';
+              html += '<a href="/Login/sessie/' + sessie.pk + '/update/" class="card-link">Edit</a>';
+              html += '<a href="/Login/sessie/' + sessie.pk + '/delete/" class="card-link">Delete</a>';
+              html += '</div></div></div>';
+
+              // Append the new card to the container
+              $('#cardContainer').append(html);
+           });
+          }
+      });
+  }
+
+  // Function to trigger the updateSessions function on page load
+  $(document).ready(function() {
+    updateSessions();
+  });
+  
+</script>
+
+  {% endblock javascript %}
+<div>
+  <ul class="sessions-list">
+    
+  </ul>
+</div>
 <form class="form-inline mb-3" method="get">
-  <label class="mr-2" for="student_name">Zoek op naam:</label>
-  <input type="text" class="form-control mr-2" name="student_name" id="student_name">
-  <button type="submit" class="btn btn-primary">Zoek</button>
+  <label class="mr-2" for="school">School:</label>
+  <select class="form-control mr-2" name="school" id="school" onchange="updateSessions()">
+    <option value="">Selecteer een school</option>
+    {% for school in schools %}
+    <option value="{{ school.naam }}">{{ school.naam }}</option>
+    {% endfor %}
+  </select>
+  
+  <label class="mr-2" for="begeleider">Begeleider:</label>
+  <select class="form-control mr-2" name="begeleider" id="begeleider" onchange="updateSessions()">
+    <option value="">Selecteer een begeleider</option>
+    {% for begeleider in begeleiders %}
+    <option value="{{ begeleider.gebruiker }}">{{ begeleider.gebruiker }}</option>
+    {% endfor %}
+  </select>
+  
+  <label class="mr-2" for="vak">Vak:</label>
+  <select class="form-control mr-2" name="vak" id="vak" onchange="updateSessions()">
+    <option value="">Selecteer een vak</option>
+    {% for vak in vaks %}
+    <option value="{{ vak.naam }}">{{ vak.naam }}</option>
+    {% endfor %}
+  </select>
+  
+  <label class="mr-2" for="klas">Klas:</label>
+  <select class="form-control mr-2" name="klas" id="klas" onchange="updateSessions()">
+    <option value="">Selecteer een klas</option>
+    {% for klas in klass %}
+    <option value="{{ klas.naam }}">{{ klas.naam }}</option>
+    {% endfor %}
+  </select>
+  
+  <label class="mr-2" for="niveau">Niveau:</label>
+  <select class="form-control mr-2" name="niveau" id="niveau" onchange="updateSessions()">
+    <option value="">Selecteer een niveau</option>
+    {% for niveau in niveaus %}
+    <option value="{{ niveau.naam }}">{{ niveau.naam }}</option>
+    {% endfor %}
+  </select>
+  
+  <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
-<div class="container-md">
-    <div class="row">
-      {% for sessie in object_list %}
-        <div class="col-md-4 mb-3">
-          <div class="card">
-            <img class="card-img-top" src="{% static 'Login/Schoolklaar.png' %}" alt="Card image cap">
-            <div class="card-body">
-              <h5 class="card-title">{{ sessie.datum }}</h5>
-              <p class="card-text">Leerling:<a href="{% url 'Login:student_detail' sessie.Leerling.pk %}"> {{sessie.Leerling}}  </a></p>
-              <p class="card-text"> Begeleider: {{ sessie.begeleider }}</p>
-              <p class="card-text"> School: {{ sessie.Leerling.school }}</p>
-              <p class="card-text"> Niveau: {{ sessie.Leerling.niveau }}</p>
-              <p class="card-text"> Klas: {{ sessie.Leerling.klas }}</p>
-            </div>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">Vak: {{ sessie.vak }}</li>
-              <li class="list-group-item">Inzicht: {{ sessie.inzicht }}</li>
-              <li class="list-group-item">Kennis: {{ sessie.kennis }}</li>
-              <li class="list-group-item">Werkhouding: {{ sessie.werkhouding }}</li>
-              <li class="list-group-item">Extra: {{ sessie.extra }}</li>
-            </ul>
-            <div class="card-body">
-              <a href="{% url 'Login:sessie_update' sessie.pk %}" class="card-link">Edit</a>
-              <a href="{% url 'Login:sessie_delete' sessie.pk %}" class="card-link">Delete</a>
-          </div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
+    
+    <button class="btn btn-secondary" type="button" onclick="resetFilters()">Reset</button>
+  </form>
+  
+  <div class="container-md">
+      <div class="row" id="cardContainer">
+        <!-- Cards will be generated here using AJAX -->
+      </div>
   </div>
   
-{% endblock %}
+  {% endblock %}
+  
