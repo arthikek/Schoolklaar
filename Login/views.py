@@ -81,7 +81,7 @@ class SessieListViewAPI(APIView):
         if query_klas_name:
             sessies = sessies.filter(Leerling__klas__naam__icontains=query_klas_name)
 
-        serializer = SessieSerializer(sessies, many=True)
+        serializer = SessieSerializer(sessies.order_by('-datum'), many=True)
         return Response(serializer.data)
 
 
