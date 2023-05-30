@@ -48,7 +48,7 @@
               html += '<img class="card-img-top" src="/static/Login/Schoolklaar.png" alt="Card image cap">';
               html += '<div class="card-body">';
               html += '<h5 class="card-title">' + sessie.datum + '</h5>';
-              html += '<p class="card-text">Leerling:<a href="/Login/student_detail/' + sessie.Leerling?.id + '"> ' + sessie.Leerling?.naam +  '  </a></p>';
+              html += '<p class="card-text">Leerling:<a href="/Login/student/' + sessie.Leerling?.id + '"> ' + sessie.Leerling?.naam +  '  </a></p>';
               html += '<p class="card-text"> Begeleider: ' + sessie.begeleider?.username + '</p>';
               html += '<p class="card-text"> School: ' + sessie.school?.naam + '</p>';
               html += '</div>';
