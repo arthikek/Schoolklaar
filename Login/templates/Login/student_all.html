@@ -1,11 +1,20 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<!-- Add your form here if needed -->
+
+
 
 <div class="container">
   <h1>Alle leerlingen</h1>
-  <table class="styled-table">
+  
+  <!-- Search form -->
+  <form id="search-form">
+    <input type="text" name="search-input" id="search-input" placeholder="Zoek op naam">
+    
+  </form>
+
+  <!-- Your table here -->
+  <table class="styled-table" id="student-table">
     <thead>
       <tr>
         <th>Voornaam</th>
@@ -15,17 +24,66 @@
         <th>Details</th>
       </tr>
     </thead>
-    <tbody>
-      {% for leerling in object_list %}
-        <tr>
-          <td>{{ leerling.naam }}</td>
-          <td>{{ leerling.achternaam }}</td>
-          <td>{{ leerling.email }}</td>
-          <td>{{ leerling.school }}</td>
-          <td><a href="{% url 'Login:student_detail' leerling.pk %}">Details</a></td>
-        </tr>
-      {% endfor %}
+    <tbody id="table-body">
+      <!-- Will be populated with JS -->
     </tbody>
   </table>
 </div>
+
+{% block javascript %}
+<script>
+// function to populate table
+function populateTable(data) {
+  var tableBody = document.getElementById('table-body');
+  // Clear the table
+  tableBody.innerHTML = '';
+
+  // Populate the table with fetched data
+  data.forEach(student => {
+      var row = tableBody.insertRow();
+      var cell1 = row.insertCell(0);
+      var cell2 = row.insertCell(1);
+      var cell3 = row.insertCell(2);
+      var cell4 = row.insertCell(3);
+      var cell5 = row.insertCell(4);
+
+      cell1.textContent = student.naam;
+      cell2.textContent = student.achternaam;
+      cell3.textContent = student.email;
+      cell4.textContent = student.school.naam;
+      cell5.innerHTML = `<a href="/Login/student/${student.id}">Details</a>`;
+  });
+}
+
+// Fetch all students when page loads
+fetch(`{% url 'Login:api_student' %}`, {
+  method: 'GET',
+  headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Token your_token_here'  // replace this with the actual token
+  },
+})
+.then(response => response.json())
+.then(data => populateTable(data));
+
+// Fetch students based on search
+document.getElementById('search-input').addEventListener('input', function(event) {
+  event.preventDefault();
+
+  var searchInput = document.getElementById('search-input').value;
+
+  fetch(`{% url 'Login:api_student' %}?search-input=${searchInput}`, {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token your_token_here'  // replace this with the actual token
+      },
+  })
+  .then(response => response.json())
+  .then(data => populateTable(data));
+});
+
+</script>
+{% endblock javascript %}
 {% endblock %}
+

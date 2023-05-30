@@ -26,7 +26,43 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Begeleider, Teamleider
-from .serializers import SessieSerializer
+from .serializers import SessieSerializer, LeerlingSerializer
+
+
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import LeerlingSerializer  # make sure to create this serializer
+
+class StudentListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queryset = Leerling.objects.all()
+        student_name = self.request.GET.get('search-input') 
+        print(student_name)
+        gebruiker = self.request.user
+
+        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
+
+        if begeleider:
+            scholen = begeleider.scholen.all()
+        elif teamleider:
+            scholen = [teamleider.school]
+        else:
+            return Response([], status=status.HTTP_200_OK)
+
+        if scholen:
+            queryset = queryset.filter(school__in=scholen)
+
+        if student_name:
+            queryset = queryset.filter(naam__istartswith=student_name)
+        
+        serializer = LeerlingSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 
 class SessieListViewAPI(APIView):
@@ -46,19 +82,21 @@ class SessieListViewAPI(APIView):
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
        
         teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
-        print(teamleider)
+        
         if begeleider:
             scholen = begeleider.scholen.all()
-            print('begeleider:scholen',scholen)
+            
         elif teamleider:
             scholen = [teamleider.school]
-            print(scholen)
+           
         else:
             return Response([])
 
         if scholen:
             sessies = sessies.filter(Leerling__school__in=scholen)
-            print(sessies)
+           
+            
+            
 
     # Get the school and begeleider query parameters
         query_school_name = self.request.GET.get('school')

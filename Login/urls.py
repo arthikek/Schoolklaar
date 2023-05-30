@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView,MateriaalListView, DeleteMateriaalView, UpdateMateriaalView,MateriaalDetailView,get, SessieListViewAPI
+from .views import AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView,MateriaalListView, DeleteMateriaalView, UpdateMateriaalView,MateriaalDetailView,get, SessieListViewAPI, StudentListAPI
 app_name='Login'
 
 urlpatterns = [
@@ -23,8 +23,10 @@ urlpatterns = [
     path('materiaal/<int:pk>/delete/', DeleteMateriaalView.as_view(), name='materiaal_delete'),
     path('materiaal/<int:pk>/update/', UpdateMateriaalView.as_view(), name='materiaal_update'),
     path('materiaal/<int:pk>/download/', get, name='materiaal_download'),  # new URL for downloading a Materiaal
-    path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie')
-
+    
+    #api
+    path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie'),
+    path('api/student/', StudentListAPI.as_view(), name='api_student')
     
 ]
 

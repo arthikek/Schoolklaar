@@ -10,8 +10,6 @@ from pkg_resources import DistInfoDistribution
 from rest_framework.views import APIView
 
 
-testset
-
 
 
 class School(models.Model):
