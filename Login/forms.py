@@ -16,7 +16,7 @@ class SessieForm(forms.ModelForm):
     class Meta:
         model = Sessie
         fields = '__all__'
-        
+        exclude=['school','begeleider']
 
 class SessieFormUpdate(forms.ModelForm):
     class Meta: 

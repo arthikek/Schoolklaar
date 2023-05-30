@@ -48,7 +48,7 @@
               html += '<img class="card-img-top" src="/static/Login/Schoolklaar.png" alt="Card image cap">';
               html += '<div class="card-body">';
               html += '<h5 class="card-title">' + sessie.datum + '</h5>';
-              html += '<p class="card-text">Leerling:<a href="/Login/student_detail/' + sessie.Leerling?.naam + '"> ' + sessie.Leerling?.naam +  '  </a></p>';
+              html += '<p class="card-text">Leerling:<a href="/Login/student_detail/' + sessie.Leerling?.pk + '"> ' + sessie.Leerling?.naam +  '  </a></p>';
               html += '<p class="card-text"> Begeleider: ' + sessie.begeleider?.username + '</p>';
               html += '<p class="card-text"> School: ' + sessie.school?.naam + '</p>';
               html += '</div>';
@@ -60,8 +60,8 @@
               html += '<li class="list-group-item">Extra: ' + sessie.extra + '</li>';
               html += '</ul>';
               html += '<div class="card-body">';
-              html += '<a href="/Login/sessie/' + sessie.pk + '/update/" class="card-link">Edit</a>';
-              html += '<a href="/Login/sessie/' + sessie.pk + '/delete/" class="card-link">Delete</a>';
+              html += '<a href="/Login/sessie/' + sessie.id + '/update/" class="card-link">Edit</a>';
+              html += '<a href="/Login/sessie/' + sessie.id + '/delete/" class="card-link">Delete</a>';
               html += '</div></div></div>';
 
               // Append the new card to the container

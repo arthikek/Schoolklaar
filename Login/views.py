@@ -187,6 +187,11 @@ class AddSessieView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.begeleider = self.request.user
+        leerling = form.cleaned_data.get('Leerling')
+
+        # Assign the school automatically based on the chosen student
+        form.instance.school = leerling.school
+
         return super().form_valid(form)
 
 
