@@ -237,45 +237,42 @@ class AddSessieView(LoginRequiredMixin, CreateView):
 
 @login_required
 def add_sessie_view(request):
-    try:
-        if request.method == 'POST':
-            # Access form data using request.POST
-            leerling_voornaam = request.POST.get('Leerling').split()[0]
-            leerling_achternaam = request.POST.get('Leerling').split()[1]
-            inzicht = request.POST.get('inzicht')
-            kennis = request.POST.get('kennis')
-            werkhouding = request.POST.get('werkhouding')
-            extra = request.POST.get('extra')
-            school_id = request.POST.get('school')
-            vak_naam = request.POST.get('vak')
+    if request.method == 'POST':
+        # Access form data using request.POST
+        leerling_voornaam = request.POST.get('Leerling').split()[0]
+        leerling_achternaam = request.POST.get('Leerling').split()[1]
+        inzicht = request.POST.get('inzicht')
+        kennis = request.POST.get('kennis')
+        werkhouding = request.POST.get('werkhouding')
+        extra = request.POST.get('extra')
+        school_id = request.POST.get('school')
+        vak_naam = request.POST.get('vak')
+    
+        # Fetch related objects
+        leerling = search_leerling(leerling_voornaam, leerling_achternaam)
+        school = School.objects.get(id=leerling.school.id)
         
-            # Fetch related objects
-            leerling = search_leerling(leerling_voornaam, leerling_achternaam)
-            school = School.objects.get(id=leerling.school.id)
-            
-            vak = Vak.objects.get(naam=vak_naam)
-            begeleider = request.user  # assuming the user is logged in
+        vak = Vak.objects.get(naam=vak_naam)
+        begeleider = request.user  # assuming the user is logged in
 
-            # Create and save new Sessie
-            sessie = Sessie(
-                Leerling=leerling, 
-                begeleider=begeleider, 
-                inzicht=inzicht, 
-                kennis=kennis, 
-                werkhouding=werkhouding, 
-                extra=extra, 
-                school=school, 
-                vak=vak
-            )
-            print(sessie)
-            sessie.save()
+        # Create and save new Sessie
+        sessie = Sessie(
+            Leerling=leerling, 
+            begeleider=begeleider, 
+            inzicht=inzicht, 
+            kennis=kennis, 
+            werkhouding=werkhouding, 
+            extra=extra, 
+            school=school, 
+            vak=vak
+        )
+        print(sessie)
+        sessie.save()
 
         
-            return redirect('Login:sessie_all')  # assuming you want to redirect to the list of all sessions
+        return redirect('Login:sessie_all')  # assuming you want to redirect to the list of all sessions
 
-        else:
-            return render(request, 'Login/add_sessie.html', {})
-    except:
+    else:
         return render(request, 'Login/add_sessie.html', {})
 
 
