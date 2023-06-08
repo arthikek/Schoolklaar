@@ -1,15 +1,98 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% load crispy_forms_tags %}
 <div class="container">
     <h1>Maak een logboek</h1>
-    <form method="POST">
-        <div class="form-group">
+    <form method="POST" action = '{% url 'Login:form' %}'>
         {% csrf_token %}
-        {{ form|crispy}}
+        <div class="form-group">
+            <label for="id_Leerling">Leerling:</label>
+            <input list="leerlingen" id="id_Leerling" name="Leerling" class="form-control">
+            <datalist id="leerlingen">
+                
+            </datalist>
+
+            <label for="id_inzicht">Inzicht:</label>
+            <select id="id_inzicht" name="inzicht" class="form-control">
+                <option value=""></option>
+                {% for i in '12345' %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="id_kennis">Kennis:</label>
+            <select id="id_kennis" name="kennis" class="form-control">
+                <option value=""></option>
+                {% for i in '12345' %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <label for="id_werkhouding">Werkhouding:</label>
+            <select id="id_werkhouding" name="werkhouding" class="form-control">
+                <option value=""></option>
+                {% for i in '12345' %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+
+
+
+            <label for="id_extra">Extra:</label>
+            <textarea id="id_extra" name="extra" class="form-control"></textarea>
+
+         
+
+            <label for="id_vak">Vak:</label>
+            <input list="vakken" id="id_vak" name="vak" class="form-control">
+            <datalist id="vakken">
+                {% for vak in vaks %}
+                    <option value="{{ vak.naam }}"> {{ vak.naam }}</option>
+                {% endfor %}
+            </datalist>
+
+        </div>
         <button type="submit" class="btn btn-primary">Opslaan</button>
-    </div>
     </form>
 </div>
+{% block javascript %}
+<script>
+    let timeout = null;
+
+    function fill_in(data) {
+        var datalist = document.getElementById('leerlingen');
+        datalist.innerHTML = "";  // clear previous options
+
+        data.forEach(item => {
+            var option = document.createElement('option');
+            option.value = item.naam + " " + item.achternaam;
+            option.text = item.naam + " " + item.achternaam;
+            datalist.appendChild(option);
+        });
+    }
+
+    document.getElementById('id_Leerling').addEventListener('input', function(event) {
+        clearTimeout(timeout); // clear the timeout if it's already set
+
+        timeout = setTimeout(() => {
+            var searchInput = document.getElementById('id_Leerling').value;
+            var api_url = `{% url 'Login:api_student' %}?search-input=${searchInput}`;
+            fetch(api_url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token your_token_here'  // replace this with the actual token
+                },
+            })
+            .then(response => response.json())
+            .then(data => fill_in(data));
+        }, 500); // delay of 500ms
+    });
+
+    // Link the datalist to the input field for autocomplete
+    document.getElementById('id_Leerling').setAttribute('list', 'leerlingen');
+</script>
+
+{% endblock javascript %}
+
 {% endblock %}
+

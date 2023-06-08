@@ -1,3 +1,4 @@
+from math import log
 from operator import is_
 from typing import Any
 from django.shortcuts import redirect, get_object_or_404
@@ -27,13 +28,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Begeleider, Teamleider
 from .serializers import SessieSerializer, LeerlingSerializer
-
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import LeerlingSerializer  # make sure to create this serializer
+from django.db.models import Q
+
+# ...
+
+def search_leerling(naam, achternaam):
+    query = Q(naam__icontains=naam) & Q(achternaam__icontains=achternaam)
+    leerling = Leerling.objects.filter(query).order_by('-naam', '-achternaam').first()
+    print(leerling)
+    return leerling
+
 
 class StudentListAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -41,7 +50,7 @@ class StudentListAPI(APIView):
     def get(self, request):
         queryset = Leerling.objects.all()
         student_name = self.request.GET.get('search-input') 
-        print(student_name)
+        
         gebruiker = self.request.user
 
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
@@ -105,7 +114,7 @@ class SessieListViewAPI(APIView):
         query_niveau_name = self.request.GET.get('niveau')
         query_klas_name = self.request.GET.get('klas')
         
-        print(query_klas_name)
+       
     # If the query parameters are provided, filter the sessions accordingly
         if query_school_name:
             sessies = sessies.filter(school__naam=query_school_name)
@@ -199,38 +208,72 @@ class AddMateriaalView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('Login:materiaal_all')                            
 
 
+
+
 class AddSessieView(LoginRequiredMixin, CreateView):
     model = Sessie
     form_class = SessieForm
     template_name = 'Login/add_sessie.html'
     success_url = reverse_lazy('Login:sessie_all')
-    
-    def get_form(self, form_class=None):
-        form = super(AddSessieView, self).get_form(form_class)
-        gebruiker = self.request.user
-
-        begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
-        teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
-
-        if begeleider:
-            scholen = begeleider.scholen.all()
-        elif teamleider:
-            scholen = [teamleider.school]
-        else:
-            scholen = []
-
-        form.fields['Leerling'].queryset = Leerling.objects.filter(school__in=scholen)
-
-        return form
 
     def form_valid(self, form):
         form.instance.begeleider = self.request.user
-        leerling = form.cleaned_data.get('Leerling')
+        leerling_id = form.cleaned_data.get('Leerling')
+        leerling = get_object_or_404(Leerling, id=leerling_id)
 
         # Assign the school automatically based on the chosen student
         form.instance.school = leerling.school
 
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        models = ['School', 'Begeleider', 'Vak', 'Leerling', 'Niveau','Klas']
+        for model in models:
+            context[model.lower() + 's'] = globals()[model].objects.all()
+        return context
+
+
+
+@login_required
+def add_sessie_view(request):
+    if request.method == 'POST':
+        # Access form data using request.POST
+        leerling_voornaam = request.POST.get('Leerling').split()[0]
+        leerling_achternaam = request.POST.get('Leerling').split()[1]
+        inzicht = request.POST.get('inzicht')
+        kennis = request.POST.get('kennis')
+        werkhouding = request.POST.get('werkhouding')
+        extra = request.POST.get('extra')
+        school_id = request.POST.get('school')
+        vak_naam = request.POST.get('vak')
+    
+        # Fetch related objects
+        leerling = search_leerling(leerling_voornaam, leerling_achternaam)
+        school = School.objects.get(id=leerling.school.id)
+        
+        vak = Vak.objects.get(naam=vak_naam)
+        begeleider = request.user  # assuming the user is logged in
+
+        # Create and save new Sessie
+        sessie = Sessie(
+            Leerling=leerling, 
+            begeleider=begeleider, 
+            inzicht=inzicht, 
+            kennis=kennis, 
+            werkhouding=werkhouding, 
+            extra=extra, 
+            school=school, 
+            vak=vak
+        )
+        print(sessie)
+        sessie.save()
+
+        
+        return redirect('Login:sessie_all')  # assuming you want to redirect to the list of all sessions
+
+    else:
+        return render(request, 'Login/add_sessie.html', {})
 
 
 

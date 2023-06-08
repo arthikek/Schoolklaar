@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from pkg_resources import DistInfoDistribution
 from rest_framework.views import APIView
-
+from django.db.models import Q
 
 
 
