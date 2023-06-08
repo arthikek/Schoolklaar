@@ -7,7 +7,7 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="id_Leerling">Leerling:</label>
-            <input list="leerlingen" id="id_Leerling" name="Leerling" class="form-control" >
+            <input list="leerlingen" id="id_Leerling" name="Leerling" class="form-control">
             <datalist id="leerlingen">
                 
             </datalist>
@@ -43,7 +43,7 @@
          
 
             <label for="id_vak">Vak:</label>
-            <input list="vakken" id="id_vak" name="vak" class="form-control" >
+            <input list="vakken" id="id_vak" name="vak" class="form-control">
             <datalist id="vakken">
                 {% for vak in vaks %}
                     <option value="{{ vak.naam }}"> {{ vak.naam }}</option>
