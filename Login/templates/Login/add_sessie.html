@@ -60,8 +60,7 @@
 
     function fill_in(data) {
         var datalist = document.getElementById('leerlingen');
-        datalist.innerHTML = "";  // clear previous options
-
+       
         data.forEach(item => {
             var option = document.createElement('option');
             option.value = item.naam + " " + item.achternaam;
