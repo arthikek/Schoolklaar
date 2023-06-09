@@ -124,7 +124,7 @@ def generate_sessie_summary(request, student_pk):
 def search_leerling(naam, achternaam):
     query = Q(naam__icontains=naam) & Q(achternaam__icontains=achternaam)
     leerling = Leerling.objects.filter(query).order_by('-naam', '-achternaam').first()
-    print(leerling)
+    
     return leerling
 
 
@@ -206,7 +206,7 @@ class SessieListViewAPI(APIView):
             sessies = sessies.filter(begeleider__username=query_begeleider_name)
         if query_vak_name:  
             sessies = sessies.filter(vak__naam=query_vak_name)
-            print(sessies)
+            
         if query_niveau_name:
             sessies = sessies.filter(Leerling__niveau__naam=query_niveau_name)
         if query_klas_name:
@@ -351,7 +351,7 @@ def add_sessie_view(request):
                 school=school, 
                 vak=vak
             )
-            print(sessie)
+            
             sessie.save()
 
             
@@ -382,7 +382,7 @@ class SessieListView(LoginRequiredMixin, ListView):
         # Check if user is a Begeleider
         if hasattr(user, 'begeleider'):
             user_schools = user.begeleider.scholen.all() #type:ignore
-            print(user_schools)
+            
         # Check if user is a Teamleider
         if hasattr(user, 'teamleider'):
             user_schools = School.objects.filter(id=user.teamleider.school.id) #type:ignore
