@@ -23,6 +23,13 @@
                     </td>  <!-- Placed the download link within a Bootstrap button -->
                 </tr>
             {% endfor %}
+            <tr>
+              <td> Logboeken samenvatting</td>
+              <td> Overzicht logboeken van de afgelopen twintig sessies</td>  <!-- I added this column for the description of the material -->
+              <td>
+                  <a href="{% url 'Login:sessie_summary' leerling.pk %}" class="btn btn-primary">Download</a>
+              </td>  <!-- Placed the download link within a Bootstrap button -->
+          </tr>
         </tbody>
     </table>
 </div>

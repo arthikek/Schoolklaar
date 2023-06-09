@@ -85,6 +85,7 @@
   </ul>
 </div>
 <form class="form-inline mb-3" method="get">
+  {% if not request.user.teamleider %}
   <label class="mr-2" for="school">School:</label>
   <select class="form-control mr-2" name="school" id="school" onchange="updateSessions()">
     <option value="">Selecteer een school</option>
@@ -92,6 +93,8 @@
     <option value="{{ school.naam }}">{{ school.naam }}</option>
     {% endfor %}
   </select>
+  {% endif %}
+  
   
   <label class="mr-2" for="begeleider">Begeleider:</label>
   <select class="form-control mr-2" name="begeleider" id="begeleider" onchange="updateSessions()">

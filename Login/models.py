@@ -64,7 +64,7 @@ class Teamleider(models.Model):
 
 class Leerling(models.Model):
     naam = models.CharField(max_length=30)
-    achternaam = models.CharField(max_length=30)
+    achternaam = models.CharField(max_length=30) # type: ignore
     email = models.EmailField()
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
     klas = models.ForeignKey(Klas, null=True, on_delete=models.SET_NULL)
