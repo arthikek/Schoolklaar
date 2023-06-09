@@ -43,84 +43,87 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
 def generate_sessie_summary(request, student_pk):
-    # Get the Leerling object based on the provided student_pk
-    student = get_object_or_404(Leerling, pk=student_pk)
+    try:
+        # Get the Leerling object based on the provided student_pk
+        student = get_object_or_404(Leerling, pk=student_pk)
+        
+        # Get all the related Sessie instances for the student
+        sessions = Sessie.objects.filter(Leerling=student).order_by('-datum')
 
-    # Get all the related Sessie instances for the student
-    sessions = Sessie.objects.filter(Leerling=student).order_by('-datum')
+        # Create a file-like buffer to receive PDF data.
+        buffer = io.BytesIO()
 
-    # Create a file-like buffer to receive PDF data.
-    buffer = io.BytesIO()
+        # Create the PDF object using the buffer as its "file".
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
 
-    # Create the PDF object using the buffer as its "file".
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+        # Build the content for the PDF
+        content = []
 
-    # Build the content for the PDF
-    content = []
+        # Create the table data for the sessions
+        table_data = [['sessie datum', 'inzicht', 'kennis', 'werkhouding']]
+        for session in sessions:
+            session_data = [
+                session.datum,
+                session.inzicht,
+                session.kennis,
+                session.werkhouding
+            ]
+            table_data.append(session_data)
 
-    # Create the table data for the sessions
-    table_data = [['sessie datum', 'inzicht', 'kennis', 'werkhouding']]
-    for session in sessions:
-        session_data = [
-            session.datum,
-            session.inzicht,
-            session.kennis,
-            session.werkhouding
-        ]
-        table_data.append(session_data)
+            # Convert session.extra to a Paragraph with appropriate styles
+            extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
+            extra_data = [extra_paragraph]
+            table_data.append(extra_data)
 
-        # Convert session.extra to a Paragraph with appropriate styles
-        extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
-        extra_data = [extra_paragraph]
-        table_data.append(extra_data)
+        # Define the table style
+        table_style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#56b6ed')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('LEFTPADDING', (0, 1), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 1), (-1, -1), 5),
+        ])
 
-    # Define the table style
-    table_style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#56b6ed')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('LEFTPADDING', (0, 1), (-1, -1), 5),
-        ('RIGHTPADDING', (0, 1), (-1, -1), 5),
-    ])
+        # Create the table
+        table = Table(table_data, repeatRows=1, colWidths=[2* inch, 2 * inch, 2* inch, 1.5 * inch])
 
-    # Create the table
-    table = Table(table_data, repeatRows=1, colWidths=[2* inch, 2 * inch, 2* inch, 1.5 * inch])
+        # Set the row height for the content rows
+        row_height = 0.5 * inch  # Adjust the value as needed
+        table.setStyle(TableStyle([
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('LEADING', (0, 0), (-1, -1), row_height),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+        ]))
 
-    # Set the row height for the content rows
-    row_height = 0.5 * inch  # Adjust the value as needed
-    table.setStyle(TableStyle([
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('LEADING', (0, 0), (-1, -1), row_height),
-        ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-    ]))
+        # Add the SPAN commands for the sessie.extra information
+        for session_index in range(len(sessions)):
+            i = 2 * session_index + 2
+            table_style.add('SPAN', (0, i), (3, i))
 
-    # Add the SPAN commands for the sessie.extra information
-    for session_index in range(len(sessions)):
-        i = 2 * session_index + 2
-        table_style.add('SPAN', (0, i), (3, i))
+        table.setStyle(table_style)
 
-    table.setStyle(table_style)
+        # Add the table to the content
+        content.append(table)
 
-    # Add the table to the content
-    content.append(table)
+        # Build the PDF document
+        doc.build(content)
 
-    # Build the PDF document
-    doc.build(content)
+        # Set the filename for the downloaded PDF
+        filename = f"{student.naam}_{student.achternaam}_sessie_summary.pdf"
 
-    # Set the filename for the downloaded PDF
-    filename = f"{student.naam}_{student.achternaam}_sessie_summary.pdf"
+        # Set the buffer position to the start of the stream
+        buffer.seek(0)
 
-    # Set the buffer position to the start of the stream
-    buffer.seek(0)
-
-    # Return the PDF as a FileResponse with the appropriate headers
-    return FileResponse(buffer, as_attachment=True, filename=filename)
+        # Return the PDF as a FileResponse with the appropriate headers
+        return FileResponse(buffer, as_attachment=True, filename=filename)
+    except:
+        return redirect('Login:student_detail', pk=student_pk)  
 
 
     
