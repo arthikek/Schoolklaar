@@ -59,19 +59,20 @@ def generate_sessie_summary(request, student_pk):
     content = []
 
     # Create the table data for the sessions
-    table_data = [['Sessie datum', 'Inzicht', 'Kennis', 'Werkhouding', 'Extra']]
+    table_data = [['sessie datum', 'inzicht', 'kennis', 'werkhouding']]
     for session in sessions:
-        # Convert session.extra to a Paragraph with appropriate styles
-        extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
-
         session_data = [
             session.datum,
             session.inzicht,
             session.kennis,
-            session.werkhouding,
-            extra_paragraph
+            session.werkhouding
         ]
         table_data.append(session_data)
+
+        # Convert session.extra to a Paragraph with appropriate styles
+        extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
+        extra_data = [extra_paragraph]
+        table_data.append(extra_data)
 
     # Define the table style
     table_style = TableStyle([
@@ -88,11 +89,7 @@ def generate_sessie_summary(request, student_pk):
     ])
 
     # Create the table
-    table = Table(table_data, repeatRows=1)
-    table.setStyle(table_style)
-
-    # Set the column width for the 'Extra' column
-    table._argW[4] = 1.5 * inch  # Adjust the value as needed
+    table = Table(table_data, repeatRows=1, colWidths=[2* inch, 2 * inch, 2* inch, 1.5 * inch])
 
     # Set the row height for the content rows
     row_height = 0.5 * inch  # Adjust the value as needed
@@ -101,8 +98,14 @@ def generate_sessie_summary(request, student_pk):
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('LEADING', (0, 0), (-1, -1), row_height),
         ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-        ('VALIGN', (0, 1), (-1, -1), 'TOP'),  # Align content at the top
     ]))
+
+    # Add the SPAN commands for the sessie.extra information
+    for session_index in range(len(sessions)):
+        i = 2 * session_index + 2
+        table_style.add('SPAN', (0, i), (3, i))
+
+    table.setStyle(table_style)
 
     # Add the table to the content
     content.append(table)
@@ -118,6 +121,7 @@ def generate_sessie_summary(request, student_pk):
 
     # Return the PDF as a FileResponse with the appropriate headers
     return FileResponse(buffer, as_attachment=True, filename=filename)
+
 
     
 
