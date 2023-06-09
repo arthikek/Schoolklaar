@@ -32,10 +32,94 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import LeerlingSerializer  # make sure to create this serializer
+from .serializers import LeerlingSerializer  
 from django.db.models import Q
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph,Table, TableStyle, LongTable
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
-# ...
+def generate_sessie_summary(request, student_pk):
+    # Get the Leerling object based on the provided student_pk
+    student = get_object_or_404(Leerling, pk=student_pk)
+
+    # Get all the related Sessie instances for the student
+    sessions = Sessie.objects.filter(Leerling=student).order_by('-datum')
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object using the buffer as its "file".
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
+    # Build the content for the PDF
+    content = []
+
+    # Create the table data for the sessions
+    table_data = [['Sessie datum', 'Inzicht', 'Kennis', 'Werkhouding', 'Extra']]
+    for session in sessions:
+        # Convert session.extra to a Paragraph with appropriate styles
+        extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
+
+        session_data = [
+            session.datum,
+            session.inzicht,
+            session.kennis,
+            session.werkhouding,
+            extra_paragraph
+        ]
+        table_data.append(session_data)
+
+    # Define the table style
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#56b6ed')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('LEFTPADDING', (0, 1), (-1, -1), 5),
+        ('RIGHTPADDING', (0, 1), (-1, -1), 5),
+    ])
+
+    # Create the table
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(table_style)
+
+    # Set the column width for the 'Extra' column
+    table._argW[4] = 1.5 * inch  # Adjust the value as needed
+
+    # Set the row height for the content rows
+    row_height = 0.5 * inch  # Adjust the value as needed
+    table.setStyle(TableStyle([
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('LEADING', (0, 0), (-1, -1), row_height),
+        ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+        ('VALIGN', (0, 1), (-1, -1), 'TOP'),  # Align content at the top
+    ]))
+
+    # Add the table to the content
+    content.append(table)
+
+    # Build the PDF document
+    doc.build(content)
+
+    # Set the filename for the downloaded PDF
+    filename = f"{student.naam}_{student.achternaam}_sessie_summary.pdf"
+
+    # Set the buffer position to the start of the stream
+    buffer.seek(0)
+
+    # Return the PDF as a FileResponse with the appropriate headers
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+    
 
 def search_leerling(naam, achternaam):
     query = Q(naam__icontains=naam) & Q(achternaam__icontains=achternaam)
@@ -251,7 +335,7 @@ def add_sessie_view(request):
         
             # Fetch related objects
             leerling = search_leerling(leerling_voornaam, leerling_achternaam)
-            school = School.objects.get(id=leerling.school.id)
+            school = School.objects.get(id=leerling.school.id) # type:ignore
             
             vak = Vak.objects.get(naam=vak_naam)
             begeleider = request.user  # assuming the user is logged in
@@ -288,13 +372,43 @@ class SessieListView(LoginRequiredMixin, ListView):
     template_name = 'Login/sessie_detail.html'
     context_object_name = 'sessies'
 
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        models = ['School', 'Begeleider', 'Vak', 'Leerling', 'Niveau','Klas']
+
+        # Get current user
+        user = self.request.user
+        user_schools = School.objects.none()  # Start with no schools
+      
+        # Check if user is a Begeleider
+        if hasattr(user, 'begeleider'):
+            user_schools = user.begeleider.scholen.all() #type:ignore
+            print(user_schools)
+        # Check if user is a Teamleider
+        if hasattr(user, 'teamleider'):
+            user_schools = School.objects.filter(id=user.teamleider.school.id) #type:ignore
+
+        # If user is neither Begeleider nor Teamleider, return original context
+        if not user_schools:
+            return context
+
+        models = ['Vak', 'Leerling', 'Niveau', 'Klas']
+
         for model in models:
             context[model.lower() + 's'] = globals()[model].objects.all()
+
+        models2 = ['Begeleider', 'School']
+
+        for model in models2:
+            if model == 'Begeleider':
+                # For Begeleiders, we filter by the schools related to the user
+                context[model.lower() + 's'] = globals()[model].objects.filter(scholen__in=user_schools).distinct()
+                
+            elif model == 'School':
+                # For Schools, we can directly use the user's schools
+                context[model.lower() + 's'] = user_schools
+
         return context
+
 
 
 
