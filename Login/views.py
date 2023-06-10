@@ -24,10 +24,11 @@ from pyrsistent import v
 from yaml import serialize
 from Login import report
 import io, logging
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image as ReportLabImage
+
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
