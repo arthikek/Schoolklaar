@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from pyrsistent import v
 from yaml import serialize
-from Login import report
+
 import io, logging
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image 
 from reportlab.pdfgen import canvas
