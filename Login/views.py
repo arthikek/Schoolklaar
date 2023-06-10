@@ -1,72 +1,44 @@
 from math import log
 from operator import is_
 from typing import Any
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
-from pyrsistent import v
-from yaml import serialize
-
-from Login import report
-from .forms import StudentForm, SessieForm, MateriaalForm,SessieFormUpdate
-from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal,Vak,Klas,Niveau
-from django.shortcuts import render
-from django.views.generic.edit import DeleteView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import DeleteView, UpdateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import HttpResponse
-from django.db.models.query import QuerySet
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render  
-from django.http import HttpRequest, HttpResponse , FileResponse ,HttpResponseServerError
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, FileResponse, HttpResponseServerError, JsonResponse
+from django.db.models import Q, QuerySet
 from django.core import serializers
-from .serializers import SessieSerializer
+from django.core.files.images import ImageFile
+from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
+from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
+from .serializers import SessieSerializer, LeerlingSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Begeleider, Teamleider
-from .serializers import SessieSerializer, LeerlingSerializer
 from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .serializers import LeerlingSerializer  
-from django.db.models import Q
-import io
+from pyrsistent import v
+from yaml import serialize
+from Login import report
+import io, logging
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph,Table, TableStyle, LongTable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image as ReportLabImage
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
-import matplotlib.pyplot as plt
-import matplotlib
-from reportlab.platypus import Image
-from PIL import Image as PilImage
-import logging
-from PIL import Image as PilImage
 from reportlab.lib.utils import ImageReader
-
-
 import matplotlib.pyplot as plt
 import matplotlib
-from reportlab.platypus import Image
-from django.core.files.images import ImageFile
 from PIL import Image as PilImage
 from io import BytesIO
-from reportlab.platypus import Image as ReportLabImage
+
 logger = logging.getLogger(__name__)
 matplotlib.use('Agg')  # Ensure matplotlib is in non-interactive mode
 
-from reportlab.lib.utils import ImageReader
-
-from reportlab.platypus import Image
-
-from reportlab.platypus import Table
 
 def generate_sessie_summary(request, student_pk):
     try:
