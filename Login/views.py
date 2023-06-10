@@ -1,52 +1,50 @@
 from math import log
 from operator import is_
 from typing import Any
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
-from pyrsistent import v
-from yaml import serialize
-from .forms import StudentForm, SessieForm, MateriaalForm,SessieFormUpdate
-from .models import Leerling, School, Sessie, Begeleider, Teamleider,Materiaal,Vak,Klas,Niveau
-from django.shortcuts import render
-from django.views.generic.edit import DeleteView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import DeleteView, UpdateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import HttpResponse
-from django.db.models.query import QuerySet
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render  
-from django.http import HttpRequest, HttpResponse , FileResponse
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, FileResponse, HttpResponseServerError, JsonResponse
+from django.db.models import Q, QuerySet
 from django.core import serializers
-from .serializers import SessieSerializer
+from django.core.files.images import ImageFile
+from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
+from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
+from .serializers import SessieSerializer, LeerlingSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Begeleider, Teamleider
-from .serializers import SessieSerializer, LeerlingSerializer
 from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .serializers import LeerlingSerializer  
-from django.db.models import Q
-import io
+from pyrsistent import v
+from yaml import serialize
+from Login import report
+import io, logging
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph,Table, TableStyle, LongTable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image as ReportLabImage
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+import matplotlib.pyplot as plt
+import matplotlib
+from PIL import Image as PilImage
+from io import BytesIO
+
+logger = logging.getLogger(__name__)
+matplotlib.use('Agg')  # Ensure matplotlib is in non-interactive mode
+
 
 def generate_sessie_summary(request, student_pk):
     try:
         # Get the Leerling object based on the provided student_pk
         student = get_object_or_404(Leerling, pk=student_pk)
-        
+
         # Get all the related Sessie instances for the student
         sessions = Sessie.objects.filter(Leerling=student).order_by('-datum')
 
@@ -59,8 +57,11 @@ def generate_sessie_summary(request, student_pk):
         # Build the content for the PDF
         content = []
 
-        # Create the table data for the sessions
+            # Create the table data for the sessions
         table_data = [['sessie datum', 'inzicht', 'kennis', 'werkhouding']]
+        inzicht_data = []
+        kennis_data = []
+        werkhouding_data = []
         for session in sessions:
             session_data = [
                 session.datum,
@@ -69,12 +70,16 @@ def generate_sessie_summary(request, student_pk):
                 session.werkhouding
             ]
             table_data.append(session_data)
-
+            inzicht_data.append(session.inzicht)
+            kennis_data.append(session.kennis)
+            werkhouding_data.append(session.werkhouding)
             # Convert session.extra to a Paragraph with appropriate styles
             extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
             extra_data = [extra_paragraph]
             table_data.append(extra_data)
-
+        inzicht_data=inzicht_data[::-1]
+        kennis_data=kennis_data[::-1]
+        werkhouding_data=werkhouding_data[::-1]
         # Define the table style
         table_style = TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#56b6ed')),
@@ -90,7 +95,7 @@ def generate_sessie_summary(request, student_pk):
         ])
 
         # Create the table
-        table = Table(table_data, repeatRows=1, colWidths=[2* inch, 2 * inch, 2* inch, 1.5 * inch])
+        table = Table(table_data, repeatRows=1, colWidths=[2 * inch, 2 * inch, 2 * inch, 2 * inch])
 
         # Set the row height for the content rows
         row_height = 0.5 * inch  # Adjust the value as needed
@@ -109,8 +114,51 @@ def generate_sessie_summary(request, student_pk):
         table.setStyle(table_style)
 
         # Add the table to the content
-        content.append(table)
+       
 
+        fig, axs = plt.subplots(3, 1, figsize=(8, 16)) # Change figure size as needed
+
+        # Plotting Inzicht
+        # Create new figure for Inzicht plot
+        fig, ax = plt.subplots()
+        ax.plot(inzicht_data, label='Inzicht', color='#56b6ed', linewidth=2.0)
+        ax.set_xlabel('Aantal sessies')
+        ax.set_ylabel('Inzicht')
+        ax.legend()
+        imgdata = BytesIO()
+        plt.savefig(imgdata, format='png')
+        plt.clf()  # Clear figure
+        imgdata.seek(0)
+        reportlab_image_inzicht = Image(imgdata, width=300, height=300) # Change dimensions as needed
+        content.append(reportlab_image_inzicht)
+
+        # Create new figure for Kennis plot
+        fig, ax = plt.subplots()
+        ax.plot(kennis_data, label='Kennis', color='#56b6ed', linewidth=2.0)
+        ax.set_xlabel('Aantal sessies')
+        ax.set_ylabel('Kennis')
+        ax.legend()
+        imgdata = BytesIO()
+        plt.savefig(imgdata, format='png')
+        plt.clf()  # Clear figure
+        imgdata.seek(0)
+        reportlab_image_kennis = Image(imgdata, width=300, height=300) # Change dimensions as needed
+        content.append(reportlab_image_kennis)
+
+        # Create new figure for Werkhouding plot
+        fig, ax = plt.subplots()
+        ax.plot(werkhouding_data, label='Werkhouding', color='#56b6ed', linewidth=2.0)
+        ax.set_xlabel('Aantal sessies')
+        ax.set_ylabel('Werkhouding')
+        ax.legend()
+        imgdata = BytesIO()
+        plt.savefig(imgdata, format='png')
+        plt.clf()  # Clear figure
+        imgdata.seek(0)
+        reportlab_image_werkhouding = Image(imgdata, width=300, height=300) # Change dimensions as needed
+        
+        content.append(reportlab_image_werkhouding)
+        content.append(table)
         # Build the PDF document
         doc.build(content)
 
@@ -122,8 +170,11 @@ def generate_sessie_summary(request, student_pk):
 
         # Return the PDF as a FileResponse with the appropriate headers
         return FileResponse(buffer, as_attachment=True, filename=filename)
-    except:
-        return redirect('Login:student_detail', pk=student_pk)  
+    except Exception as e:
+        return HttpResponseServerError(str(e))
+
+
+
 
 
     
