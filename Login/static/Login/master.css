@@ -1,5 +1,6 @@
 
 /* BASIC */
+@media print {
 
 html {
     background-color: #56b6ed;
@@ -365,4 +366,4 @@ html {
   #icon {
     width:60%;
   }
-  
+}

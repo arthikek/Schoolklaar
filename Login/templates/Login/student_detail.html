@@ -30,6 +30,13 @@
                   <a href="{% url 'Login:sessie_summary' leerling.pk %}" class="btn btn-primary">Download</a>
               </td>  <!-- Placed the download link within a Bootstrap button -->
           </tr>
+          <tr>
+            <td> Logboeken samenvatting Experimenteel</td>
+            <td> Logboeken samenvattingen Experimenteel</td>  <!-- I added this column for the description of the material -->
+            <td>
+              <a href="{% url 'Login:student_detail_2' leerling.pk %}" class="btn btn-primary">Rapport Experiementeel</a>
+          </td>  <!-- Placed the download link within a Bootstrap button -->
+        </tr>
         </tbody>
     </table>
 </div>
@@ -63,6 +70,7 @@
             <div class="card-body">
               <a href="{% url 'Login:sessie_update' sessie.pk %}" class="card-link">Edit</a>
               <a href="{% url 'Login:sessie_delete' sessie.pk %}" class="card-link">Delete</a>
+             
           </div>
           </div>
         </div>

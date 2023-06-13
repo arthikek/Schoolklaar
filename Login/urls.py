@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, 
+from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, StudentDetailView_2, 
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
-                    StudentListAPI, add_sessie_view, generate_sessie_summary)
+                    StudentListAPI, add_sessie_view, generate_sessie_summary, StudentDetailView_2)
 
 app_name='Login'
 
@@ -11,6 +11,7 @@ urlpatterns = [
     path('add_student/', AddStudentView.as_view(), name='add_student'),
     path('student_all/', StudentListView.as_view(), name='student_all'),
     path('student/<int:pk>/', StudentDetailView.as_view(), name='student_detail'),
+    path('student/report/<int:pk>', StudentDetailView_2.as_view(), name='student_detail_2'),
 
     # Sessie related urls
     path('', AddSessieView.as_view(), name='home'),
@@ -19,6 +20,7 @@ urlpatterns = [
     path('sessie/<int:pk>/', SessieDetailView.as_view(), name='sessie_detail'),
     path('sessie/<int:pk>/update/', UpdateSessieView.as_view(), name='sessie_update'),
     path('sessie/<int:pk>/delete/', DeleteSessieView.as_view(), name='sessie_delete'),
+    
 
     # Materiaal related urls
     path('add_materiaal/', AddMateriaalView.as_view(), name='add_materiaal'),

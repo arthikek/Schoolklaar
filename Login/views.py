@@ -22,12 +22,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from pyrsistent import v
 from yaml import serialize
-
+from weasyprint import HTML
 import io, logging
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, LongTable, Image 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
+from django.template.loader import render_to_string
 
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -39,6 +40,10 @@ from io import BytesIO
 
 logger = logging.getLogger(__name__)
 matplotlib.use('Agg')  # Ensure matplotlib is in non-interactive mode
+
+
+
+
 
 
 def generate_sessie_summary(request, student_pk):
@@ -77,7 +82,7 @@ def generate_sessie_summary(request, student_pk):
             # Convert session.extra to a Paragraph with appropriate styles
             extra_paragraph = Paragraph(session.extra, style=getSampleStyleSheet()["BodyText"])
             extra_data = [extra_paragraph]
-            table_data.append(extra_data)
+            table_data.append(extra_data) # type: ignore
         inzicht_data=inzicht_data[::-1]
         kennis_data=kennis_data[::-1]
         werkhouding_data=werkhouding_data[::-1]
@@ -256,6 +261,8 @@ class SessieListViewAPI(APIView):
         query_vak_name = self.request.GET.get('vak')
         query_niveau_name = self.request.GET.get('niveau')
         query_klas_name = self.request.GET.get('klas')
+        query_leerling_pk = self.request.GET.get('leerling')
+        
         
        
     # If the query parameters are provided, filter the sessions accordingly
@@ -270,6 +277,8 @@ class SessieListViewAPI(APIView):
             sessies = sessies.filter(Leerling__niveau__naam=query_niveau_name)
         if query_klas_name:
             sessies = sessies.filter(Leerling__klas__naam__icontains=query_klas_name)
+        if query_leerling_pk:
+            sessies= sessies.filter(Leerling__pk=query_leerling_pk)
 
         serializer = SessieSerializer(sessies.order_by('-datum'), many=True)
         return Response(serializer.data)
@@ -521,7 +530,11 @@ class StudentListView(LoginRequiredMixin, ListView):
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Leerling
     template_name = 'Login/student_detail.html'
-    
+class StudentDetailView_2(LoginRequiredMixin, DetailView):
+    model = Leerling
+    template_name = 'Login/report.html'
+
+ 
     
 class SessieDetailView(LoginRequiredMixin, DetailView):
     model = Sessie

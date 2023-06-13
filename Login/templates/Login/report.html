@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}All Students{% endblock %}
+
+{% block content %}
+<button class="btn btn-secondary" type="button" id="pdfButton" >Download pdf</button>
+<div class="container">
+  <h1>{{ object.naam|title }} {{ object.achternaam|title}}</h1>
+  <p>Email: {{ object.email }}</p>
+  <h2>Grafieken</h2>
+  <div>
+    <canvas id="kennisChart"></canvas>
+    <canvas id="werkhoudingChart"></canvas>
+    <canvas id="inzichtChart"></canvas>
+  </div>
+  <h2>Sessies</h2>
+
+  {% for sessie in object.sessie_set.all %}
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title">{{ sessie.datum }}</h5>
+      <h6 class="card-subtitle text-muted"><a href="{% url 'Login:student_detail' leerling.pk %}">{{
+          sessie.Leerling.naam|title}} {{sessie.Leerling.achternaam|title}}</a></h6>
+    </div>
+    <div class="card-body d-flex flex-wrap">
+      <div class="p-2">Begeleider: {{ sessie.begeleider }}</div>
+      <div class="p-2">School: {{ sessie.Leerling.school }}</div>
+      <div class="p-2">Niveau: {{ sessie.Leerling.niveau }}</div>
+      <div class="p-2">Klas: {{ sessie.Leerling.klas }}</div>
+      <div class="p-2">Vak: {{ sessie.vak }}</div>
+      <div class="p-2">Inzicht: {{ sessie.inzicht }}</div>
+      <div class="p-2">Kennis: {{ sessie.kennis }}</div>
+      <div class="p-2">Werkhouding: {{ sessie.werkhouding }}</div>
+    </div>
+
+    <div class="card-footer">
+      <h5 class="card-title">Extra Info</h5>
+      <p class="card-text">{{ sessie.extra }}</p>
+    </div>
+  </div>
+  {% endfor %}
+
+
+
+
+  {% block javascript %}
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script> 
+  <script>
+    $(document).ready(function () {
+      $("#pdfButton").click(function () {
+        var doc = new jsPDF("p", "mm", "a4");
+        doc.html(document.body, {
+          scale:0.1,
+          callback: function (doc) {
+            doc.save("output.pdf");
+          }
+        });
+      });
+
+      console.log("{{ object.pk }}")
+      $.ajax({
+        url: "{% url 'Login:api_sessie' %}",
+        data: {
+          'leerling': {{ object.pk }},
+                },
+      type: 'get',
+      dataType: 'json',
+      success: function (data) {
+
+        console.log(data);
+        var sessies = data;
+
+        // Initialize empty lists for kennis, werkhouding, inzicht
+        var kennisList = [];
+        var werkhoudingList = [];
+        var inzichtList = [];
+
+        // Loop through each session
+        sessies.forEach(function (sessie) {
+          // Add values to the respective lists
+          kennisList.push(sessie.kennis);
+          werkhoudingList.push(sessie.werkhouding);
+          inzichtList.push(sessie.inzicht);
+        });
+
+        // Log the lists
+        console.log("Kennis: ", kennisList);
+        console.log("Werkhouding: ", werkhoudingList);
+        console.log("Inzicht: ", inzichtList);
+        var labels = data.map(function (sessie, index) {
+          return "Sessie " + (index + 1);
+        });
+
+        function createChart(elementId, chartLabel, chartData) {
+          new Chart(document.getElementById(elementId), {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: chartLabel,
+                data: chartData,
+                backgroundColor: 'rgb(4, 50, 77)',
+                fill: true,
+                borderColor: 'rgb(255, 255, 255)',
+                tension: 0.2
+              }]
+            }
+          });
+        }
+
+        createChart('kennisChart', 'Kennis', kennisList);
+        createChart('werkhoudingChart', 'Werkhouding', werkhoudingList);
+        createChart('inzichtChart', 'Inzicht', inzichtList);
+      }
+            });
+        });
+  </script>
+
+  {% endblock javascript %}
+  {% endblock %}
