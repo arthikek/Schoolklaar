@@ -44,7 +44,7 @@
   <h2>Sessies</h2>
   {% for sessie in object.sessie_set.all %}
 
-  <div class="card mb-3 {% if forloop.counter|divisibleby:3 %}html2pdf__page-break{% endif %}">
+  <div class="card mb-3 {% if forloop.counter|divisibleby:2 %}html2pdf__page-break{% endif %}">
     <div class="card-header">
       <h5 class="card-title">{{ sessie.datum }}</h5>
       <h6 class="card-subtitle text-muted"><a href="{% url 'Login:student_detail' leerling.pk %}">{{sessie.Leerling.naam|title}} {{sessie.Leerling.achternaam|title}}</a></h6>
