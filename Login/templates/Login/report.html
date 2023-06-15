@@ -85,7 +85,7 @@
       console.log('form: ', element);
       var mode =  {  mode: 'legacy' };
       var opt = {
-        filename: "test" + '.pdf',
+        filename: "{{object.naam|title}}" + "" + "{{object.naam|title}} "+ '.pdf',
         pagebreak: mode,
         jsPDF: {orientation: 'portrait', unit: 'mm', format: 'A4', compressPDF: false},
         html2canvas: {scale:5}
