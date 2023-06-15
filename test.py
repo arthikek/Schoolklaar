@@ -3,7 +3,7 @@ from django.utils import timezone
 from Login.models import Leerling, Sessie, Begeleider, User, Vak, Klas, Niveau, School
 from random import randint  # Import randint
 
-# Assuming you have already retrieved the Leerling instance for "Sam Aalders"
+#sdfsdf Assuming you have already retrieved the Leerling instance for "Sam Aalders"
 leerling = Leerling.objects.get(naam="sam")
 begeleider_test=User.objects.get(username='Iris')
 school_test=School.objects.get(naam='vo')
