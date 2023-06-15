@@ -1,16 +1,36 @@
 
 /* BASIC */
-@media print {
 
 html {
     background-color: #56b6ed;
   }
-  
+
   body {
     font-family: "Poppins", sans-serif;
     height: 100vh;
   }
   
+.chartcontainer{
+  padding-left: 300px;
+}
+
+.chart-container {
+  position: relative; 
+  height:40vh; 
+  width:80vw;
+  margin: 0 auto;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+
   a {
     color: #92badd;
     display:inline-block;
@@ -246,6 +266,10 @@ html {
     color: #cccccc;
   }
 
+  .left-align .chart-container {
+    justify-content: flex-start;
+  }
+  
 
 
   
@@ -366,4 +390,3 @@ html {
   #icon {
     width:60%;
   }
-}
