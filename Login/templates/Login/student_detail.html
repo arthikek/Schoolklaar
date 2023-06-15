@@ -4,41 +4,53 @@
 
 {% load static %}
 
-    <h2>Persoonlijke bestanden leerling</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Titel</th>
-                <th>Beschrijving</th>  <!-- I added this column for the description of the material -->
-                <th>Download</th>  <!-- Added a new column for the download link -->
-            </tr>
-        </thead>
-        <tbody>
-            {% for materiaal in object.persoonlijk_materiaal.all %}
-                <tr>
-                    <td>{{ materiaal.titel }}</td>
-                    <td>{{ materiaal.omschrijving }}</td>  <!-- I added this column for the description of the material -->
-                    <td>
-                        <a href="{% url 'Login:materiaal_download' materiaal.pk %}" class="btn btn-primary">Download</a>
-                    </td>  <!-- Placed the download link within a Bootstrap button -->
-                </tr>
-            {% endfor %}
-            
-          <tr>
-            <td> Logboeken samenvatting Experimenteel</td>
-            <td> Logboeken samenvattingen Experimenteel</td>  <!-- I added this column for the description of the material -->
-            <td>
-              <a href="{% url 'Login:student_detail_2' leerling.pk %}" class="btn btn-primary">Rapport</a>
-          </td>  <!-- Placed the download link within a Bootstrap button -->
-        </tr>
-        </tbody>
-    </table>
+<div class="container mt-5">
+  <h2>Persoonlijke bestanden leerling</h2>
+  <div class="card">
+      <div class="card-body">
+          <ul class="list-group">
+              {% for materiaal in object.persoonlijk_materiaal.all %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                          <h5>{{ materiaal.titel }}</h5>
+                          <p>{{ materiaal.omschrijving }}</p>
+                      </div>
+                      <a href="{% url 'Login:materiaal_download' materiaal.pk %}" class="btn btn-primary">Download</a>
+                  </li>
+              {% endfor %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                      <h5>Logboeken samenvatting</h5>
+                      <p>Logboeken samenvattingen</p>
+                  </div>
+                  <a href="{% url 'Login:student_detail_2' leerling.pk %}" class="btn btn-primary">Rapport</a>
+              </li>
+          </ul>
+      </div>
+  </div>
 </div>
 
 
 <div class="container">
-    <h1>{{ object.naam }}  {{ object.achternaam }}</h1>
-    <p>Email: {{ object.email }}</p>
+  <div class="container" id="contentToPDF">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-8">
+          <div class="card">
+            <div class="card-body">
+              <h1 class="card-title">{{ object.naam|title }} {{ object.achternaam|title}}</h1>
+              <p class="card-text">
+                <strong>School:</strong> {{ object.school }}<br>
+                <strong>Niveau:</strong> {{ object.niveau }}<br>
+                <strong>Klas:</strong> {{ object.klas }}<br>
+                <strong>Email:</strong> {{ object.email }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
 
     <h2>Sessions</h2>
     <div class="row">

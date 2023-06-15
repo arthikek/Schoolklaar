@@ -3,57 +3,51 @@
 {% block content %}
 
 
-
 <div class="container">
   <h1>Alle leerlingen</h1>
   
   <!-- Search form -->
-  <form id="search-form">
-    <input type="text" name="search-input" id="search-input" placeholder="Zoek op naam">
-    
+  <form id="search-form" class="mb-3"> <!-- added mb-3 for some margin bottom -->
+    <div class="form-group">
+      <input type="text" name="search-input" id="search-input" class="form-control w-100" placeholder="Zoek op naam">
+    </div>
   </form>
 
-  <!-- Your table here -->
-  <table class="styled-table" id="student-table">
-    <thead>
-      <tr>
-        <th>Voornaam</th>
-        <th>Achternaam</th>
-        <th>Email</th>
-        <th>School</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody id="table-body">
-      <!-- Will be populated with JS -->
-    </tbody>
-  </table>
+  <!-- Student cards here -->
+  <div class="row" id="student-card-container">
+    <!-- Will be populated with JS -->
+  </div>
 </div>
+
 
 {% block javascript %}
 <script>
 // function to populate table
 function populateTable(data) {
-  var tableBody = document.getElementById('table-body');
-  // Clear the table
-  tableBody.innerHTML = '';
+  var cardContainer = document.getElementById('student-card-container');
+  // Clear the container
+  cardContainer.innerHTML = '';
 
-  // Populate the table with fetched data
+  // Populate the container with cards
   data.forEach(student => {
-      var row = tableBody.insertRow();
-      var cell1 = row.insertCell(0);
-      var cell2 = row.insertCell(1);
-      var cell3 = row.insertCell(2);
-      var cell4 = row.insertCell(3);
-      var cell5 = row.insertCell(4);
-
-      cell1.textContent = student.naam;
-      cell2.textContent = student.achternaam;
-      cell3.textContent = student.email;
-      cell4.textContent = student.school.naam;
-      cell5.innerHTML = `<a href="/Login/student/${student.id}">Details</a>`;
+    var cardHTML = `
+      <div class="col-sm-12 col-md-6 col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">${student.naam} ${student.achternaam}</h5>
+            <p class="card-text">
+              Email: ${student.email}<br>
+              School: ${student.school.naam}
+            </p>
+            <a href="/Login/student/${student.id}" class="btn btn-primary">Details</a>
+          </div>
+        </div>
+      </div>
+    `;
+    cardContainer.innerHTML += cardHTML;
   });
 }
+
 
 // Fetch all students when page loads
 fetch(`{% url 'Login:api_student' %}`, {
