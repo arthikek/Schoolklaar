@@ -13,16 +13,12 @@ html {
 .chartcontainer{
   padding-left: 300px;
 }
-
 .chart-container {
   position: relative; 
   height:40vh; 
   width:80vw;
   margin: 0 auto;
-  
   display: flex;
-
-  
   justify-content: center;
   align-items: center;
 }
