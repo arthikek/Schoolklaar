@@ -35,34 +35,32 @@ ALLOWED_HOSTS = ["178.79.150.108", "178-79-150-108.ip.linodeusercontent.com", "l
 
 
 # Application definition
-
 INSTALLED_APPS = [
-    'rest_framework',
-    "crispy_bootstrap4",
-    'crispy_forms',
-    "rest_framework.authtoken",
-    'Login.apps.MyAppConfig',
-    'authentication.apps.AuthenticationConfig',
-    "rest_framework_simplejwt",
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'rest_framework',                # Provides tools to build Web APIs in Django
+    "crispy_bootstrap4",            # Plugin to work with Bootstrap 4 in crispy_forms
+    'crispy_forms',                 # Helps to manage Django forms
+    "rest_framework.authtoken",     # Token-based authentication for REST framework
+    'Login.apps.MyAppConfig',       # Custom app for handling user login
+    'authentication.apps.AuthenticationConfig', # Custom app for user authentication
+    "rest_framework_simplejwt",     # Handles JWT authentication
+    'django.contrib.admin',         # Built-in Django admin interface
+    'django.contrib.auth',          # Built-in user authentication system
+    'django.contrib.contenttypes',  
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'tailwind',
-    'theme',
-    'django_browser_reload',    
-    'corsheaders',
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "dj_rest_auth",
-    "dj_rest_auth.registration",
-    "allauth.socialaccount.providers.google",
-    
-    ]
+    'tailwind',                     # Utility-first CSS framework
+    'theme',                        # Custom theming app
+    'django_browser_reload',        # Auto-reloading browser when code changes
+    'corsheaders',                  # Handles Cross-Origin Resource Sharing headers
+    "allauth",                      # Authentication app
+    "allauth.account",              # Core of allauth
+    "allauth.socialaccount",        # Provides social authentication
+    "dj_rest_auth",                 # REST authentication
+    "dj_rest_auth.registration",    # Handles user registration via REST
+    "allauth.socialaccount.providers.google",  # Google OAuth provider
+]
 
 
 SOCIALACCOUNT_PROVIDERS = {

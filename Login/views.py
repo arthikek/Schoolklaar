@@ -45,31 +45,37 @@ from django.db import IntegrityError
 
 @api_view(['POST'])
 def create_rating(request):
+    # If the incoming request is POST
     if request.method == 'POST':
+        # Extract ratings and comments from the request data
         ratings = request.data.get('ratings', {})
         comments = request.data.get('comments', {})
 
-        # Get the student object based on the user making the request
+        # Attempt to retrieve the Leerling (student) based on the user making the request
         try:
             leerling = Leerling.objects.get(gebruiker=request.user)
         except Leerling.DoesNotExist:
+            # Return an error response if the student is not found
             return Response({"detail": "Leerling not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         response_data = []
 
+        # Loop through each rating in the ratings dictionary
         for subject_name, rating_value in ratings.items():
             try:
-                # Get the Vak (Subject) instance based on the name
+                # Attempt to get the corresponding Vak (subject) for the provided subject name
                 vak = Vak.objects.get(naam=subject_name)
             except Vak.DoesNotExist:
-                continue  # If subject does not exist, skip
+                # If the subject isn't found, skip processing this rating and move to the next
+                continue
 
-            # Comment for the subject
+            # Fetch the associated comment for this subject if it exists
             comment = comments.get(subject_name, "")
 
-            # Check if an entry already exists for the given leerling and vak
+            # Check if a rating already exists for this combination of student and subject
             existing_rating = LeerlingVakRating.objects.filter(leerling=leerling, vak=vak).first()
             
+            # Prepare the data to be used with the serializer
             data = {
                 "leerling": leerling.pk,
                 "vak": vak.pk,
@@ -77,105 +83,118 @@ def create_rating(request):
                 "beschrijving": comment
             }
 
+            # If an existing rating was found, initialize the serializer to update the rating
             if existing_rating:
-                # If it exists, update the entry
                 serializer = LeerlingVakRatingSerializer(existing_rating, data=data)
             else:
-                # Otherwise, create a new entry
+                # If no existing rating was found, initialize the serializer to create a new rating
                 serializer = LeerlingVakRatingSerializer(data=data)
             
+            # Check if the serializer data is valid
             if serializer.is_valid():
+                # Save the rating (either creates a new one or updates the existing)
                 serializer.save()
-                response_data.append(serializer.data)
-            else:
-                # Here you might want to handle the error or just continue to process the rest of the subjects
-                continue
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
+                # Append the
 
 
 
 
     
 
+# Function to search a 'Leerling' (student) based on given first and last names
 def search_leerling(naam, achternaam):
+    # Construct a query to find a student whose name contains 'naam' and surname contains 'achternaam'
     query = Q(naam__icontains=naam) & Q(achternaam__icontains=achternaam)
+    # Retrieve the first student that matches the criteria, ordered by name and surname in descending order
     leerling = Leerling.objects.filter(query).order_by('-naam', '-achternaam').first()
     
     return leerling
 
+# View to get details of a student authenticated by JWT
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 class StudentDetailAPI(APIView):
 
     def post(self, request):            
-        # Assuming there is a ForeignKey or OneToOneField from Leerling to User
+        # Retrieve the student associated with the authenticated user
         student = get_object_or_404(Leerling, gebruiker=request.user)
         
+        # Serialize the student data to return
         serializer = LeerlingSerializer(student)
         return Response(serializer.data)
 
-
+# View to list students based on authentication and potential search criteria
 class StudentListAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Initially set the queryset to all students
         queryset = Leerling.objects.all()
+        # Get the search input from the request, if provided
         student_name = self.request.GET.get('search-input') 
         
+        # Determine the user making the request
         gebruiker = self.request.user
 
+        # Check if the user is associated with a 'Begeleider' (guide) or 'Teamleider' (team leader)
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
         teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
+        # Get the schools associated with the user based on their role
         if begeleider:
             scholen = begeleider.scholen.all()
         elif teamleider:
             scholen = [teamleider.school]
         else:
+            # If user is neither, return an empty response
             return Response([], status=status.HTTP_200_OK)
 
+        # Filter students based on the associated schools
         if scholen:
             queryset = queryset.filter(school__in=scholen)
 
+        # Further filter students if a search name is provided
         if student_name:
             queryset = queryset.filter(naam__istartswith=student_name)
         
+        # Serialize the filtered list of students
         serializer = LeerlingSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
-
 class SessieListViewAPI(APIView):
     """
-    List all sessies, or create a new sessie.
+    List all sessies (sessions), or create a new sessie (session).
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Initially set the queryset to all sessions
         sessies = Sessie.objects.all()
+        # Determine the user making the request
         gebruiker = self.request.user
 
+        # Check if the user is authenticated
         if not gebruiker.is_authenticated:
             return Response({'error': 'You need to be authenticated to access this endpoint.'})
 
-        
+        # Check if the user is associated with a 'Begeleider' (guide) or 'Teamleider' (team leader)
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
-       
         teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
-        
+
+        # Get the schools associated with the user based on their role
         if begeleider:
             scholen = begeleider.scholen.all()
-            
         elif teamleider:
             scholen = [teamleider.school]
-           
         else:
+            # If user is neither, return an empty response
             return Response([])
 
+        # Filter sessions based on the schools associated with the students participating in them
         if scholen:
             sessies = sessies.filter(Leerling__school__in=scholen)
-           
+
             
             
 
@@ -210,61 +229,69 @@ class SessieListViewAPI(APIView):
 
 
     
-
+# Function to retrieve and serve a specific 'Materiaal' (Material) document as a PDF attachment
 def get(request, pk):
+    # Fetch the document with the provided primary key or return a 404 if not found
     document = get_object_or_404(Materiaal, pk=pk)
+    # Create a new HTTP response serving the document as a PDF
     response = HttpResponse(document.bestand, content_type='application/pdf')
+    # Set the Content-Disposition header to trigger a file download in the browser
     response['Content-Disposition'] = f'attachment; filename="{document.bestand.name}"'
     return response
 
-
-
+# View to delete a specific 'Sessie' (Session) with user authentication check
 class DeleteSessieView(LoginRequiredMixin, DeleteView):
     model = Sessie
     template_name = 'Login/delete_sessie.html'
+    # Redirect to the session listing page upon successful deletion
     success_url = reverse_lazy('Login:sessie_all')
 
-
-
-
-
-
+# View to delete a specific 'Materiaal' (Material) with user authentication check
 class DeleteMateriaalView(LoginRequiredMixin, DeleteView):
     model = Materiaal
     template_name = 'Login/delete_materiaal.html'
+    # Redirect to the material listing page upon successful deletion
     success_url = reverse_lazy('Login:materiaal_all')
 
+# View to update details of a specific 'Materiaal' (Material) with user authentication check
 class UpdateMateriaalView(LoginRequiredMixin, UpdateView):
     model = Materiaal
     form_class = MateriaalForm
     template_name = 'Login/update_materiaal.html'
+    # Redirect to the material listing page upon successful update
     success_url = reverse_lazy('Login:materiaal_all')
 
- 
-
+# View to update details of a specific 'Sessie' (Session) with user authentication check
 class UpdateSessieView(LoginRequiredMixin, UpdateView):
     model = Sessie
     form_class = SessieFormUpdate
     template_name = 'Login/update_sessie.html'
+    # Redirect to the session listing page upon successful update
     success_url = reverse_lazy('Login:sessie_all')
     
+    # Handle the validation and saving of the form
     def form_valid(self, form):
         form.save()
         return super().form_valid(form)
 
+# View to add a new 'Leerling' (Student) with user authentication check
 class AddStudentView(LoginRequiredMixin, CreateView):
     model = Leerling
     form_class = StudentForm
     template_name = 'Login/add_student.html'
+    # Redirect to the student listing page upon successful addition
     success_url = reverse_lazy('Login:student_all')
     
+    # Override the form initialization to set custom form properties
     def get_form(self, form_class=None):
         form = super(AddStudentView, self).get_form(form_class)
         gebruiker = self.request.user
 
+        # Check if the user is associated with a 'Begeleider' (guide) or 'Teamleider' (team leader)
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
         teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
+        # Get the schools associated with the user based on their role
         if begeleider:
             scholen = begeleider.scholen.all()
         elif teamleider:
@@ -272,6 +299,7 @@ class AddStudentView(LoginRequiredMixin, CreateView):
         else:
             scholen = School.objects.none()
 
+        # Set the schools queryset for the form field based on the user's role
         form.fields['school'].queryset = scholen
 
         return form
@@ -359,44 +387,48 @@ def add_sessie_view(request):
 
 
 
+# View to display a list of 'Sessie' (Session) entries with user authentication check
 class SessieListView(LoginRequiredMixin, ListView):
     model = Sessie
-    template_name = 'Login/sessie_detail.html'
-    context_object_name = 'sessies'
+    template_name = 'Login/sessie_detail.html'      # Template to render the list of sessions
+    context_object_name = 'sessies'                  # Name to use for the list in the template
 
+    # Override method to add additional context data for the template
     def get_context_data(self, **kwargs):
+        # Retrieve context data from parent class
         context = super().get_context_data(**kwargs)
 
-        # Get current user
+        # Get the currently authenticated user
         user = self.request.user
-        user_schools = School.objects.none()  # Start with no schools
+        # Initialize with no schools, this will be filled based on user's role
+        user_schools = School.objects.none()  
       
-        # Check if user is a Begeleider
+        # Check if the current user is a 'Begeleider' and retrieve their associated schools
         if hasattr(user, 'begeleider'):
             user_schools = user.begeleider.scholen.all() #type:ignore
             
-        # Check if user is a Teamleider
+        # Check if the current user is a 'Teamleider' and retrieve their associated school
         if hasattr(user, 'teamleider'):
             user_schools = School.objects.filter(id=user.teamleider.school.id) #type:ignore
 
-        # If user is neither Begeleider nor Teamleider, return original context
+        # If user is neither 'Begeleider' nor 'Teamleider', the original context is returned without additions
         if not user_schools:
             return context
 
+        # Populate context with lists of various models for use in the template
         models = ['Vak', 'Leerling', 'Niveau', 'Klas']
-
         for model in models:
             context[model.lower() + 's'] = globals()[model].objects.all()
 
+        # Additional models, specifically for Begeleiders and Schools, 
+        # which require some filtering based on the user's associations
         models2 = ['Begeleider', 'School']
-
         for model in models2:
             if model == 'Begeleider':
-                # For Begeleiders, we filter by the schools related to the user
+                # Get 'Begeleiders' associated with the schools related to the current user
                 context[model.lower() + 's'] = globals()[model].objects.filter(scholen__in=user_schools).distinct()
-                
             elif model == 'School':
-                # For Schools, we can directly use the user's schools
+                # For Schools, we can directly use the schools associated with the user
                 context[model.lower() + 's'] = user_schools
 
         return context
@@ -424,32 +456,50 @@ class MateriaalListView(LoginRequiredMixin, ListView):
 
     
 
+# View to display a list of 'Leerling' (Student) entries with user authentication check
 class StudentListView(LoginRequiredMixin, ListView):
-    model = Leerling
-    template_name = 'Login/student_all.html'
-    context_object_name = 'Leerling'
+    model = Leerling                           # The model this view operates upon
+    template_name = 'Login/student_all.html'   # Template to render the list of students
+    context_object_name = 'Leerling'           # Name to use for the list in the template
+
+    # Override method to customize the default queryset retrieved from the database
     def get_queryset(self):
+        # Retrieve the default queryset
         queryset = super().get_queryset()
+
+        # Get student name from the GET request if provided (used for filtering the results)
         student_name = self.request.GET.get('student_name') 
+
+        # Retrieve the current user
         gebruiker = self.request.user
 
+        # Check if the current user is associated with a 'Begeleider' entry
         begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+
+        # Check if the current user is associated with a 'Teamleider' entry
         teamleider = Teamleider.objects.filter(gebruiker=gebruiker).first()
 
+        # Retrieve schools based on user's association: 
+        # If a 'Begeleider', get all their associated schools
         if begeleider:
             scholen = begeleider.scholen.all()
+        # If a 'Teamleider', get their associated school
         elif teamleider:
             scholen = [teamleider.school]
+        # If neither, return an empty queryset
         else:
             return queryset.none()
 
+        # If there are associated schools, filter the students by those schools
         if scholen:
             queryset = queryset.filter(school__in=scholen)
 
+        # If a student name is provided in the GET request, 
+        # further filter the students by names starting with that value (case-insensitive)
         if student_name:
-            queryset = queryset.filter(naam__istartswith=student_name)  # filter the queryset by the student_name value
+            queryset = queryset.filter(naam__istartswith=student_name)
             
-        return queryset
+        return queryset  # Return the customized queryset
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Leerling
