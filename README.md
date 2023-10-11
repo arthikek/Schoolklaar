@@ -34,6 +34,14 @@ Deze Django-applicatie is opgezet met verschillende pakketten, inclusief onderst
     ```
     Standaard start dit de ontwikkelingsserver op http://127.0.0.1:8000/. Je kunt de beheersite bereiken op http://127.0.0.1:8000/admin/.
 
+## Sites Framework Configuratie
+Voor het instellen van domeinen en sitenamen in Django, navigeer naar:
+[http://localhost:8000/admin/sites/site/](http://localhost:8000/admin/sites/site/)
+
+Vervang example.com door:
+
+http://localhost:8000
+
 ## Superuser aanmaken
     ```
     python manage.py createsuperuser
