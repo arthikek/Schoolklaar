@@ -63,13 +63,16 @@ class Teamleider(models.Model):
 
 
 class Leerling(models.Model):
+    
     naam = models.CharField(max_length=30)
     achternaam = models.CharField(max_length=30) # type: ignore
     email = models.EmailField()
     school = models.ForeignKey(School, null=True, on_delete=models.CASCADE)
     klas = models.ForeignKey(Klas, null=True, on_delete=models.SET_NULL)
     niveau = models.ForeignKey(Niveau, null=True, on_delete=models.SET_NULL)
-    
+    gebruiker = models.OneToOneField(User, blank=True, null=True, on_delete=models.CASCADE)
+    vakken = models.ManyToManyField(Vak, through='LeerlingVakRating', related_name='leerlingen')
+
     
     def __str__(self):
         return f'{self.naam} {self.achternaam}'
@@ -77,6 +80,16 @@ class Leerling(models.Model):
     def get_absolute_url(self):
         return reverse('Leerling_detail', kwargs={'pk': self.pk})
     
+class LeerlingVakRating(models.Model):
+    MOEILIJKHEIDSKEUZES = [(i, str(i)) for i in range(1, 11)]  
+    leerling = models.ForeignKey(Leerling, on_delete=models.CASCADE)
+    vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
+    cijfer = models.IntegerField(choices=MOEILIJKHEIDSKEUZES, default=5)
+    beschrijving = models.TextField(default='Schrijf hier een beschrijving van het vak')
+
+    class Meta:
+        unique_together = ['leerling', 'vak']  # ensure a unique rating for each subject per student
+        
     
 class Materiaal(models.Model):
     titel = models.CharField(max_length=100)

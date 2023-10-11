@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Sessie, Begeleider, Leerling, School, Vak, User
+from .models import Sessie, Begeleider, Leerling, School, Vak, User, LeerlingVakRating
 
 class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,17 +12,28 @@ class BegeleiderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Begeleider
         fields = ['id', 'gebruiker', 'scholen']
-
-class LeerlingSerializer(serializers.ModelSerializer):
-    school = SchoolSerializer(read_only=True)
-    class Meta:
-        model = Leerling
-        fields = '__all__'
-
+        
 class VakSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vak
         fields = '__all__'
+        
+class LeerlingVakRatingSerializer(serializers.ModelSerializer):
+    vak = VakSerializer(read_only=True)
+    class Meta:
+        model = LeerlingVakRating
+        fields = ['leerling', 'vak', 'cijfer', 'beschrijving']
+        
+
+        
+class LeerlingSerializer(serializers.ModelSerializer):
+    school = SchoolSerializer(read_only=True)  
+    vak_ratings = LeerlingVakRatingSerializer(source='leerlingvakrating_set', many=True, read_only=True)
+    class Meta:
+        model = Leerling
+        fields = '__all__'
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

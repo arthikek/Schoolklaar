@@ -24,9 +24,12 @@ urlpatterns = [
    
   
     path('Login/',include("Login.urls")),
+    path('api/auth/', include('authentication.urls')),
     path('admin/', admin.site.urls),
     path('',views.redirect_to_login,name='home'),
+    path('accounts_2/',include('allauth.urls')),
     path('accounts/',include('django.contrib.auth.urls')),
+    
     path("__reload__/", include("django_browser_reload.urls")),
  
 ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import School, Leerling, Sessie, Begeleider, Teamleider, Niveau, Vak, Klas, Materiaal
+from .models import School, Leerling, Sessie, Begeleider, Teamleider, Niveau, Vak, Klas, Materiaal, LeerlingVakRating
 
 
 @admin.register(School)
@@ -9,12 +9,25 @@ class SchoolAdmin(admin.ModelAdmin):
     list_filter = ('grootte',)
 
 
+
+class LeerlingVakInline(admin.TabularInline):
+    model = LeerlingVakRating
+    extra = 1  # Number of blank forms to display
+
+
 @admin.register(Leerling)
 class LeerlingAdmin(admin.ModelAdmin):
-    list_display = ('naam', 'achternaam', 'email', 'school')
+    list_display = ('naam', 'achternaam', 'email', 'school', 'gebruiker','pk')
     search_fields = ('naam', 'achternaam', 'email')
     list_filter = ('school',)
+    inlines = [LeerlingVakInline]
 
+# ... remaining admin classes ...
+
+@admin.register(LeerlingVakRating)
+class LeerlingVakAdmin(admin.ModelAdmin):
+    list_display = ('leerling', 'vak', 'cijfer', 'beschrijving')
+    search_fields = ('leerling__naam', 'leerling__achternaam', 'vak__naam')
 
 @admin.register(Sessie)
 class SessieAdmin(admin.ModelAdmin):
@@ -60,7 +73,7 @@ class NiveauAdmin(admin.ModelAdmin):
 
 @admin.register(Vak)
 class VakAdmin(admin.ModelAdmin):
-    list_display = ('naam',)
+    list_display = ('naam', 'pk')
     search_fields = ('naam',)
 
 

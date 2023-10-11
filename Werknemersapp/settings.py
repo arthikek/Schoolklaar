@@ -12,9 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from telnetlib import AUTHENTICATION
 from click import INT
 from django.urls import reverse_lazy
-
+from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +30,8 @@ SECRET_KEY = 'django-insecure-9efm@rcp(9f@cshbf+z7b))i!hhrovtjh4gkj9v=5^t$qgg@1y
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ["178.79.150.108", "178-79-150-108.ip.linodeusercontent.com", "lvs.schoolklaar.nl","127.0.0.1"]
+ALLOWED_HOSTS = ["178.79.150.108", "178-79-150-108.ip.linodeusercontent.com", "lvs.schoolklaar.nl", "127.0.0.1", "localhost"]
+
 
 
 # Application definition
@@ -38,18 +40,48 @@ INSTALLED_APPS = [
     'rest_framework',
     "crispy_bootstrap4",
     'crispy_forms',
+    "rest_framework.authtoken",
     'Login.apps.MyAppConfig',
+    'authentication.apps.AuthenticationConfig',
+    "rest_framework_simplejwt",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'tailwind',
     'theme',
-    'django_browser_reload',
+    'django_browser_reload',    
+    'corsheaders',
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+    "allauth.socialaccount.providers.google",
     
-]
+    ]
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "888008928753-qntnk84kepfj66t89g69lijrtmmamvng.apps.googleusercontent.com",  # replace me
+            "secret": "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",        # replace me
+            "key": "",                               # leave empty
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "VERIFIED_EMAIL": True,
+    },
+}
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 TAILWIND_APP_NAME = 'theme'
@@ -59,15 +91,27 @@ INTERNAL_IPS = ["127.0.0.1",]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # Add this line
+    'corsheaders.middleware.CorsMiddleware', # new
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
+  
+    
 ]
 
+
+
 ROOT_URLCONF = 'Werknemersapp.urls'
+
+
+CORS_ALLOWED_ORIGINS = [
+     "http://localhost:3000", # If your frontend is served on localhost:3000 during development
+    "https://yourfrontenddomain.com",
+ ]
+CORS_ALLOW_CREDENTIALS = True
+
 
 TEMPLATES = [
     {
@@ -158,3 +202,48 @@ LOGIN_REDIRECT_URL=reverse_lazy('Login:add_sessie')
 LOGOUT_REDIRECT_URL = 'login'
 
 SESSION_COOKIE_AGE_REMEMBER_ME = 60 * 60 * 24 * 30  # 30 days in seconds
+SESSION_COOKIE_HTTPONLY = True
+
+CSRF_HEADER_NAME = 'X-CSRFToken'
+CSRF_HEADER_NAME = 'HTTP_X-CSRFToken'
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
+    "SIGNING_KEY": "complexsigningkey",  # generate a key and replace me
+    "ALGORITHM": "HS512",
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ]
+}
+
+SITE_ID = 2
+
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+}
+
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000/",
+        "http://127.0.0.1:3000/",
+        "https://leerling.schoolklaar.nl/",
+        "http://localhost:3000/"
+    ]
+
+

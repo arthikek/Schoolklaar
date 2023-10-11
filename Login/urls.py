@@ -2,7 +2,10 @@ from django.urls import path
 from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, StudentDetailView_2, 
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
-                    StudentListAPI, add_sessie_view, generate_sessie_summary, StudentDetailView_2)
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating)
+
+
+
 
 app_name='Login'
 
@@ -33,10 +36,11 @@ urlpatterns = [
     #api
     path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie'),
     path('api/student/', StudentListAPI.as_view(), name='api_student'),
-    
+    path('api/student_detail/', StudentDetailAPI.as_view(), name='api_student_detail'),
+    path('api/create_rating/', create_rating, name='api_create_rating'),
     #form
     path('form/', add_sessie_view, name='form'),
-     path('student/<int:student_pk>/sessie_summary/', generate_sessie_summary, name='sessie_summary')
+
 ]
 
 
