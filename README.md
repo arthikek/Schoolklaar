@@ -46,3 +46,16 @@ http://localhost:8000
     ```
     python manage.py createsuperuser
     ```
+
+## Probleemoplossing
+Foutmelding met Site matching query does not exist.
+Als je deze foutmelding tegenkomt, kan dit te maken hebben met een verkeerd geconfigureerd SITE_ID in settings.py.
+
+Oplossing:
+
+Inspecteer de django_site tabel in je database. Je kunt hiervoor gebruik maken van een database management tool afhankelijk van de database die je gebruikt (bijv. pgAdmin voor PostgreSQL, DBeaver, sqlite3, etc.). sqlite viewer in VS CODE.
+Zoek naar de id waarde van de site die je gebruikt. Noteer deze id.
+Open settings.py en stel de SITE_ID variabele in op de genoteerde id uit stap 2.
+Voorbeeld:
+
+Als je django_site tabel een site heeft met de id waarde 3, stel dan SITE_ID = 3 in settings.py.
