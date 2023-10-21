@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, SessieDetailView, StudentDetailView_2, 
+from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, AddSessieAPIView, SessieDetailView, StudentDetailView_2, 
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
-                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating)
+                    AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView,
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView)
 
 
 
@@ -33,11 +34,22 @@ urlpatterns = [
     path('materiaal/<int:pk>/update/', UpdateMateriaalView.as_view(), name='materiaal_update'),
     path('materiaal/<int:pk>/download/', get, name='materiaal_download'),  
 
-    #api
+    #api Student Portal
     path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie'),
     path('api/student/', StudentListAPI.as_view(), name='api_student'),
     path('api/student_detail/', StudentDetailAPI.as_view(), name='api_student_detail'),
     path('api/create_rating/', create_rating, name='api_create_rating'),
+    path('api/vakken/', get_all_subjects, name='api_get_all_subjects'),
+
+
+    #api Admin Portal
+    path('api/add_sessie/', AddSessieAPIView.as_view(), name='api_add_sessie'),
+    path('api/add_student/', AddStudentAPIView.as_view(), name='api_add_student'),
+    path('api/general_context/', GeneralContextAPIView.as_view(), name='api_general_context'),
+    path('api/materiaal_all/', MateriaalListApiView.as_view(), name='api_materiaal_all_context'),
+    path('api/materiaal_ind/', IndividualMateriaalListApiView.as_view(), name='api_materiaal_all_context'),
+
+
     #form
     path('form/', add_sessie_view, name='form'),
 

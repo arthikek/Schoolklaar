@@ -14,7 +14,7 @@ from django.core import serializers
 from django.core.files.images import ImageFile
 from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
-from .serializers import SessieSerializer, LeerlingSerializer
+from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -35,71 +35,82 @@ from .serializers import LeerlingVakRatingSerializer
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-
-
-
+from .serializers import *
 
 
 from django.db import IntegrityError
 
 
+
+
+#############################################################################################################
+############################################## CREATE RATING VIEW #################################################
+#############################################################################################################
+
 @api_view(['POST'])
 def create_rating(request):
-    # If the incoming request is POST
+    print('data', request.data)
     if request.method == 'POST':
-        # Extract ratings and comments from the request data
         ratings = request.data.get('ratings', {})
         comments = request.data.get('comments', {})
 
-        # Attempt to retrieve the Leerling (student) based on the user making the request
         try:
             leerling = Leerling.objects.get(gebruiker=request.user)
         except Leerling.DoesNotExist:
-            # Return an error response if the student is not found
             return Response({"detail": "Leerling not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         response_data = []
 
-        # Loop through each rating in the ratings dictionary
         for subject_name, rating_value in ratings.items():
             try:
-                # Attempt to get the corresponding Vak (subject) for the provided subject name
                 vak = Vak.objects.get(naam=subject_name)
             except Vak.DoesNotExist:
-                # If the subject isn't found, skip processing this rating and move to the next
+                print('subject not found')
                 continue
 
-            # Fetch the associated comment for this subject if it exists
             comment = comments.get(subject_name, "")
-
-            # Check if a rating already exists for this combination of student and subject
             existing_rating = LeerlingVakRating.objects.filter(leerling=leerling, vak=vak).first()
             
-            # Prepare the data to be used with the serializer
             data = {
                 "leerling": leerling.pk,
                 "vak": vak.pk,
-                "cijfer": rating_value,
+                "cijfer": int(rating_value),  # Convert to integer
                 "beschrijving": comment
             }
 
-            # If an existing rating was found, initialize the serializer to update the rating
             if existing_rating:
                 serializer = LeerlingVakRatingSerializer(existing_rating, data=data)
             else:
-                # If no existing rating was found, initialize the serializer to create a new rating
                 serializer = LeerlingVakRatingSerializer(data=data)
             
-            # Check if the serializer data is valid
             if serializer.is_valid():
-                # Save the rating (either creates a new one or updates the existing)
                 serializer.save()
-                # Append the
+                response_data.append({"subject": subject_name, "status": "success"})
+            else:
+                response_data.append({"subject": subject_name, "status": "error", "errors": serializer.errors})
 
+        return Response(response_data, status=status.HTTP_200_OK)
+        
 
+#############################################################################################################
+############################################## GET ALL SUBJECTS VIEW #################################################
+#############################################################################################################
 
-
+# Fetching available subjects
+@api_view(['GET'])
+def get_all_subjects(request):
+    try:
+        subjects = Vak.objects.all()
+        if not subjects:
+            return Response({"error": "No subjects found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        subjects_data = [{"id": subject.id, "name": subject.naam} for subject in subjects]
+        return Response(subjects_data, status=status.HTTP_200_OK)
     
+    except Exception as e:
+        return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 # Function to search a 'Leerling' (student) based on given first and last names
 def search_leerling(naam, achternaam):
@@ -110,18 +121,72 @@ def search_leerling(naam, achternaam):
     
     return leerling
 
-# View to get details of a student authenticated by JWT
+
+
+#############################################################################################################
+############################################## STUDENT DETAILS #################################################
+#############################################################################################################
+
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 class StudentDetailAPI(APIView):
 
     def post(self, request):            
-        # Retrieve the student associated with the authenticated user
-        student = get_object_or_404(Leerling, gebruiker=request.user)
+        try:
+            # Retrieve the student associated with the authenticated user
+            student = Leerling.objects.get(gebruiker=request.user)
+            
+            # Serialize the student data to return
+            serializer = LeerlingSerializer(student)
+            return Response(serializer.data)
         
-        # Serialize the student data to return
-        serializer = LeerlingSerializer(student)
-        return Response(serializer.data)
+        except Leerling.DoesNotExist:
+            raise NotFound("Student not found for the authenticated user.")
+        
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request):
+        try:
+            # Retrieve the student associated with the authenticated user
+            student = Leerling.objects.get(gebruiker=request.user)
+
+            # Deserialize the request data to update the student
+            serializer = LeerlingSerializer(student, data=request.data, partial=True)
+            
+            if serializer.is_valid():
+                student = serializer.save()
+                
+                # Handle the vakken field manually
+                vakken_ids = request.data.get('vakken', [])
+                
+                # Remove existing vakken not in the new list
+                for vak in student.vakken.all():
+                    if vak.id not in vakken_ids:
+                        student.vakken.remove(vak)
+                
+                # Add new vakken from the list
+                for vak_id in vakken_ids:
+                    if not student.vakken.filter(id=vak_id).exists():
+                        student.vakken.add(vak_id)
+                
+                return Response(serializer.data)
+            else:
+                raise ValidationError(serializer.errors)
+            
+        except Leerling.DoesNotExist:
+            raise NotFound("Student not found for the authenticated user.")
+            
+        except ValidationError as ve:
+            return Response({"error": ve.detail}, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#############################################################################################################
+############################################## STUDENT LIST #################################################
+#############################################################################################################
 
 # View to list students based on authentication and potential search criteria
 class StudentListAPI(APIView):
@@ -161,6 +226,11 @@ class StudentListAPI(APIView):
         serializer = LeerlingSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
+
+#############################################################################################################
+############################################## SESSION API #################################################
+#############################################################################################################
 
 class SessieListViewAPI(APIView):
     """
@@ -239,6 +309,12 @@ def get(request, pk):
     response['Content-Disposition'] = f'attachment; filename="{document.bestand.name}"'
     return response
 
+
+
+#############################################################################################################
+############################################## DELETE VIEW #################################################
+#############################################################################################################
+
 # View to delete a specific 'Sessie' (Session) with user authentication check
 class DeleteSessieView(LoginRequiredMixin, DeleteView):
     model = Sessie
@@ -274,11 +350,18 @@ class UpdateSessieView(LoginRequiredMixin, UpdateView):
         form.save()
         return super().form_valid(form)
 
+
+
+#############################################################################################################
+############################################## ADD STUDENT #################################################
+#############################################################################################################
+
 # View to add a new 'Leerling' (Student) with user authentication check
 class AddStudentView(LoginRequiredMixin, CreateView):
     model = Leerling
     form_class = StudentForm
     template_name = 'Login/add_student.html'
+
     # Redirect to the student listing page upon successful addition
     success_url = reverse_lazy('Login:student_all')
     
@@ -304,6 +387,55 @@ class AddStudentView(LoginRequiredMixin, CreateView):
 
         return form
 
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class AddStudentAPIView(APIView):
+    def post(self, request):
+        print('request', request.data)
+        try:
+            gebruiker = request.data['gebruiker']
+            user = User.objects.get(username=gebruiker)
+            begeleider = Begeleider.objects.filter(gebruiker=user).first()
+            teamleider = Teamleider.objects.filter(gebruiker=user).first()
+            
+            # Get the schools associated with the user based on their role
+            if begeleider:
+                scholen = begeleider.scholen.all()
+            elif teamleider:
+                scholen = School.objects.filter(id=teamleider.school.pk)
+            else:
+                scholen = School.objects.none()
+
+            # Restrict the schools in the incoming data
+            if 'school' in request.data and int(request.data['school']) not in [school.id for school in scholen]:
+                return Response({"error": "Invalid school for this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+            data = request.data.copy()  # Create a mutable copy of the data
+            if 'school' in data:
+                data['school'] = int(data['school'])  # Convert to integer
+            serializer = LeerlingSerializer(data=data)
+
+            print('check 3')
+            print('serializer', serializer)
+            serializer.is_valid(raise_exception=True)  # Raises a serializers.ValidationError if not valid
+            print('check 4')
+            serializer.save()  # Create the new Leerling
+            print('check 5')
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            print(e)
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # Log the error for debugging purposes
+            print(e)
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+#############################################################################################################
+############################################## ADD Material #################################################
+#############################################################################################################
 
 class AddMateriaalView(LoginRequiredMixin, CreateView):
     model = Materiaal
@@ -313,6 +445,9 @@ class AddMateriaalView(LoginRequiredMixin, CreateView):
 
 
 
+#############################################################################################################
+############################################## ADD Session #################################################
+#############################################################################################################
 
 class AddSessieView(LoginRequiredMixin, CreateView):
     model = Sessie
@@ -337,6 +472,21 @@ class AddSessieView(LoginRequiredMixin, CreateView):
             context[model.lower() + 's'] = globals()[model].objects.all()
         return context
 
+
+class AddSessieAPIView(LoginRequiredMixin, APIView):
+    def post(self, request):
+        serializer = SessieSerializer(data=request.data)
+        if serializer.is_valid():
+            sessie = serializer.save()
+
+            sessie.begeleider = request.user
+            leerling_id = serializer.validated_data.get('Leerling')
+            leerling = get_object_or_404(Leerling, id=leerling_id)
+            sessie.school = leerling.school
+            sessie.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required
@@ -436,6 +586,9 @@ class SessieListView(LoginRequiredMixin, ListView):
 
 
 
+#############################################################################################################
+############################################## Material lIST View #################################################
+#############################################################################################################
 
 class MateriaalListView(LoginRequiredMixin, ListView):
     model = Materiaal
@@ -454,7 +607,74 @@ class MateriaalListView(LoginRequiredMixin, ListView):
         else:
             return Materiaal.objects.none()
 
-    
+
+
+########### GET ALL SUBJECTS ###############
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class MateriaalListApiView(APIView):    
+    def get(self, request):
+        try:
+            gebruiker = request.user
+   
+            begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+            if begeleider:
+                materiaal_list = Materiaal.objects.filter(leerling__isnull=True)
+            else:
+                materiaal_list = Materiaal.objects.none()
+
+            # Serialize the data
+            serializer = MateriaalSerializer(materiaal_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except DatabaseError:
+            # This will catch any database related errors
+            return Response({"error": "Database error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            # This is a general exception handler. Be cautious when using it.
+            return Response({"error": f"An error occurred: {str(e)}."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+####### GET INIDIVIDUAL SUBJECT ##########
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class IndividualMateriaalListApiView(APIView):    
+    def get(self, request):
+        try:
+            gebruiker = request.user
+   
+            begeleider = Begeleider.objects.filter(gebruiker=gebruiker).first()
+            if begeleider:
+                materiaal_list = Materiaal.objects.filter(leerling__isnull=True)
+            else:
+                materiaal_list = Materiaal.objects.none()
+
+            # Retrieve the vak_slug from the request's query parameters
+            vak_slug = request.query_params.get('vak_slug', None)
+            
+            if vak_slug:
+                # Fetch the Vak object based on its slug
+                vak = Vak.objects.filter(naam=vak_slug).first()
+                if not vak:
+                    raise NotFound(f"Vak with slug '{vak_slug}' not found.")
+                
+                # Use the retrieved Vak's ID to filter the Materiaal entries
+                materiaal_list = materiaal_list.filter(vak_id=vak.id)
+            
+            # Serialize the data
+            serializer = MateriaalSerializer(materiaal_list, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except DatabaseError:
+            # This will catch any database related errors
+            return Response({"error": "Database error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            # This is a general exception handler. Be cautious when using it.
+            return Response({"error": f"An error occurred: {str(e)}."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#############################################################################################################
+############################################## STUDENT LIST #################################################
+#############################################################################################################
 
 # View to display a list of 'Leerling' (Student) entries with user authentication check
 class StudentListView(LoginRequiredMixin, ListView):
@@ -501,10 +721,18 @@ class StudentListView(LoginRequiredMixin, ListView):
             
         return queryset  # Return the customized queryset
 
+
+
+
+#############################################################################################################
+############################################## Details #################################################
+#############################################################################################################
+
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Leerling
     template_name = 'Login/student_detail.html'
-    
+
+
 class StudentDetailView_2(LoginRequiredMixin, DetailView):
     model = Leerling
     template_name = 'Login/report.html'
@@ -522,3 +750,36 @@ class MateriaalDetailView(LoginRequiredMixin, DetailView):
     template_name = 'Login/materiaal_detail.html'
     context_object_name = 'materiaal'
 
+
+
+#############################################################################################################
+############################################## General Inforation view #################################################
+#############################################################################################################
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class GeneralContextAPIView(APIView):
+    def get(self, request):
+        try:
+            print("Received a request")
+            context = {
+                'schools': SchoolSerializer(School.objects.all(), many=True).data,
+                'begeleiders': BegeleiderSerializer(Begeleider.objects.all(), many=True).data,
+                'teamleiders': TeamleiderSerializer(Teamleider.objects.all(), many=True).data,
+                'vakken': VakSerializer(Vak.objects.all(), many=True).data,
+                'leerlings': LeerlingSerializer(Leerling.objects.all(), many=True).data,
+                'klassen': KlasSerializer(Klas.objects.all(), many=True).data,
+                'niveaus': NiveauSerializer(Niveau.objects.all(), many=True).data,
+            }
+            return Response(context)
+
+        except Exception as e:
+            # Log the exception for debugging purposes
+            print(f"Error occurred: {e}")
+            
+            # Return a JSON response indicating the error
+            error_data = {
+                "error": "An unexpected error occurred on the server.",
+                "detail": str(e)
+            }
+            return Response(error_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
