@@ -236,7 +236,7 @@ class SessieListViewAPI(APIView):
     """
     List all sessies (sessions), or create a new sessie (session).
     """
-    permission_classes = [IsAuthenticated]
+
 
     def get(self, request):
         # Initially set the queryset to all sessions

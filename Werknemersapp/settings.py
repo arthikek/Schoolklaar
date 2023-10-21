@@ -107,6 +107,8 @@ ROOT_URLCONF = 'Werknemersapp.urls'
 CORS_ALLOWED_ORIGINS = [
      "http://localhost:3000", # If your frontend is served on localhost:3000 during development
     "https://yourfrontenddomain.com",
+    "https://leerlingportaal-frontend.vercel.app"
+    
  ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -219,8 +221,10 @@ SIMPLE_JWT = {
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ]
+        "rest_framework.authentication.SessionAuthentication",
+    ],
 }
+
 
 SITE_ID = 2
 
