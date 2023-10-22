@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from distutils.command import sdist
 from turtle import mode
 from django.db import models
@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 
 
-from datetime import datetime
+import datetime
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -119,7 +119,7 @@ class Sessie(models.Model):
     kennis = models.IntegerField(choices=KENNIS_CHOICES)  # Knowledge rating
     werkhouding = models.IntegerField(choices=WERKHOUDING_CHOICES)  # Work attitude rating
     extra = models.TextField()  # Additional notes
-    datum = models.DateField(default=datetime.now)  # Date of the session
+    datum = models.DateField(default=datetime.date.today())  # Date of the session
     school = models.ForeignKey(School, on_delete=models.CASCADE, null=True, blank=True)
     vak = models.ForeignKey(Vak, null=True, on_delete=models.SET_NULL)  # Subject of the session
 

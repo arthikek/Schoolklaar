@@ -459,6 +459,7 @@ class CreateMateriaalAPIView(generics.CreateAPIView):
 ############################################## ADD Session #################################################
 #############################################################################################################
 
+
 class AddSessieView(LoginRequiredMixin, CreateView):
     model = Sessie
     form_class = SessieForm
@@ -482,21 +483,32 @@ class AddSessieView(LoginRequiredMixin, CreateView):
             context[model.lower() + 's'] = globals()[model].objects.all()
         return context
 
-
-class AddSessieAPIView(LoginRequiredMixin, APIView):
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class AddSessieAPIView(APIView):
     def post(self, request):
-        serializer = SessieSerializer(data=request.data)
+        # Create a mutable copy of the request data
+        data = request.data.copy()
+        
+        print("Request Data:", data)
+        
+        # Extract the Leerling ID from the request data
+        leerling_id = data.pop('Leerling')[0]  # QueryDict values are lists, so we take the first element
+        # Fetch the Leerling instance using the provided ID
+        leerling_instance = Leerling.objects.get(id=leerling_id)
+        
+        # Update the request data with the Leerling instance
+        data['Leerling'] = leerling_instance.id
+        
+        serializer = SessieSerializer(data=data)
+        print(serializer.is_valid())
+        
         if serializer.is_valid():
-            sessie = serializer.save()
-
-            sessie.begeleider = request.user
-            leerling_id = serializer.validated_data.get('Leerling')
-            leerling = get_object_or_404(Leerling, id=leerling_id)
-            sessie.school = leerling.school
-            sessie.save()
-
+            sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 @login_required

@@ -66,14 +66,23 @@ class LeerlingSerializer(serializers.ModelSerializer):
 
 
 class SessieSerializer(serializers.ModelSerializer):
-    Leerling = LeerlingSerializer(read_only=True)
+    Leerling = serializers.PrimaryKeyRelatedField(queryset=Leerling.objects.all())
     begeleider = UserSerializer(read_only=True)
     school = SchoolSerializer(read_only=True)
-    vak = VakSerializer(read_only=True)
+    vak = serializers.PrimaryKeyRelatedField(queryset=Vak.objects.all())
+    
+    
+
+
 
     class Meta:
         model = Sessie
         fields = ['id', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'extra', 'datum', 'school', 'vak']
+
+   
+
+
+
 
 # Serializer for the Klas model
 class KlasSerializer(serializers.ModelSerializer):
