@@ -3,7 +3,7 @@ from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddS
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
                     AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView,
-                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView)
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView)
 
 
 
@@ -42,12 +42,13 @@ urlpatterns = [
     path('api/vakken/', get_all_subjects, name='api_get_all_subjects'),
 
 
-    #api Admin Portal
+    #api Instructor Portal
     path('api/add_sessie/', AddSessieAPIView.as_view(), name='api_add_sessie'),
     path('api/add_student/', AddStudentAPIView.as_view(), name='api_add_student'),
     path('api/general_context/', GeneralContextAPIView.as_view(), name='api_general_context'),
     path('api/materiaal_all/', MateriaalListApiView.as_view(), name='api_materiaal_all_context'),
     path('api/materiaal_ind/', IndividualMateriaalListApiView.as_view(), name='api_materiaal_all_context'),
+    path('api/add_materiaal/', CreateMateriaalAPIView.as_view(), name='api_add_materiaal'),
 
 
     #form

@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from pyrsistent import v
 from yaml import serialize
-
+from rest_framework import generics
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 
@@ -441,7 +441,17 @@ class AddMateriaalView(LoginRequiredMixin, CreateView):
     model = Materiaal
     form_class = MateriaalForm
     template_name = 'Login/add_materiaal.html'
-    success_url = reverse_lazy('Login:materiaal_all')                            
+    success_url = reverse_lazy('Login:materiaal_all')      
+    
+
+                    
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class CreateMateriaalAPIView(generics.CreateAPIView):
+    queryset = Materiaal.objects.all()
+    serializer_class = MateriaalSerializer
+
+
 
 
 

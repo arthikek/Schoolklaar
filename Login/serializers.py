@@ -39,17 +39,16 @@ class LeerlingVakRatingSerializer(serializers.ModelSerializer):
         fields = ['leerling', 'vak', 'cijfer', 'beschrijving']
         
 class MateriaalSerializer(serializers.ModelSerializer):
-    vak = serializers.StringRelatedField()
-    niveau = serializers.StringRelatedField()
-    klas = serializers.StringRelatedField()
-
     class Meta:
         model = Materiaal
         fields = '__all__'
+
         
 class LeerlingSerializer(serializers.ModelSerializer):
+    
     school = SchoolSerializer(read_only=True)  
     vak_ratings = LeerlingVakRatingSerializer(source='leerlingvakrating_set', many=True, read_only=True)
+    
     class Meta:
         model = Leerling
         fields = '__all__'

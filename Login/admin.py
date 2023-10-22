@@ -79,7 +79,8 @@ class VakAdmin(admin.ModelAdmin):
 
 @admin.register(Klas)
 class KlasAdmin(admin.ModelAdmin):
-    list_display = ('naam',)
+    list_display = ('naam' , 'pk')	
+
     search_fields = ('naam',)
 
 
