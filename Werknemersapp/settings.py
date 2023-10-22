@@ -107,7 +107,8 @@ ROOT_URLCONF = 'Werknemersapp.urls'
 CORS_ALLOWED_ORIGINS = [
      "http://localhost:3000", # If your frontend is served on localhost:3000 during development
     "https://yourfrontenddomain.com",
-    "https://leerlingportaal-frontend.vercel.app"
+    "https://leerlingportaal-frontend.vercel.app",
+    "https://schoolklaar-fronend-backend.vercel.app/"
     
  ]
 CORS_ALLOW_CREDENTIALS = True
@@ -245,7 +246,8 @@ else:
         "http://localhost:3000/",
         "http://127.0.0.1:3000/",
         "https://leerling.schoolklaar.nl/",
-        "http://localhost:3000/"
+        "http://localhost:3000/",
+        "https://schoolklaar-fronend-backend.vercel.app/"
     ]
 
 
