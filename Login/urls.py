@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import (AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, AddSessieAPIView, SessieDetailView, StudentDetailView_2, 
+from .views import (AddSessieAPIView_2, AddStudentView, DeleteMateriaalView, StudentDetailView, AddSessieView, AddSessieAPIView, SessieDetailView, StudentDetailView_2, 
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
                     AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView,
-                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView)
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,)
 
 
 
@@ -44,6 +44,7 @@ urlpatterns = [
 
     #api Instructor Portal
     path('api/add_sessie/', AddSessieAPIView.as_view(), name='api_add_sessie'),
+    path('api/add_sessie_2/', AddSessieAPIView_2.as_view(), name='api_add_sessie_2'),
     path('api/add_student/', AddStudentAPIView.as_view(), name='api_add_student'),
     path('api/general_context/', GeneralContextAPIView.as_view(), name='api_general_context'),
     path('api/materiaal_all/', MateriaalListApiView.as_view(), name='api_materiaal_all_context'),

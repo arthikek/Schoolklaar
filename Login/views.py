@@ -14,7 +14,7 @@ from django.core import serializers
 from django.core.files.images import ImageFile
 from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
-from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer
+from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -507,7 +507,29 @@ class AddSessieAPIView(APIView):
             sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+class AddSessieAPIView_2(APIView):
+    def post(self, request):
+        # Create a mutable copy of the request data
+        data = request.data.copy()
+        
+        print("Request Data:", data)
+        
+        # Extract the Leerling ID from the request data
+        leerling_id = data.pop('Leerling')[0]  # QueryDict values are lists, so we take the first element
+        # Fetch the Leerling instance using the provided ID
+        leerling_instance = Leerling.objects.get(id=leerling_id)
+        
+        # Update the request data with the Leerling instance
+        data['Leerling'] = leerling_instance.id
+        
+        serializer = SessieSerializer_2(data=data)
+        print(serializer.is_valid())
+        
+        if serializer.is_valid():
+            sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -792,7 +814,9 @@ class GeneralContextAPIView(APIView):
                 'leerlings': LeerlingSerializer(Leerling.objects.all(), many=True).data,
                 'klassen': KlasSerializer(Klas.objects.all(), many=True).data,
                 'niveaus': NiveauSerializer(Niveau.objects.all(), many=True).data,
+                'sessies':SessieSerializer(Sessie.objects.all(), many=True ).data 
             }
+           
             return Response(context)
 
         except Exception as e:
