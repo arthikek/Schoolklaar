@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import School, Leerling, Sessie, Begeleider, Teamleider, Niveau, Vak, Klas, Materiaal, LeerlingVakRating
+from .models import School, Leerling, Sessie, Begeleider, Teamleider, Niveau, Vak, Klas, Materiaal, LeerlingVakRating, LeerlingVakRatingHistory
 
 
 @admin.register(School)
@@ -8,6 +8,18 @@ class SchoolAdmin(admin.ModelAdmin):
     search_fields = ('naam',)
     list_filter = ('grootte',)
 
+
+
+@admin.register(LeerlingVakRatingHistory)
+class LeerlingVakRatingHistoryAdmin(admin.ModelAdmin):
+    list_display = ('vak_name', 'date_recorded', 'cijfer', 'beschrijving')
+    search_fields = ('leerling_vak_rating__vak__name', 'date_recorded')
+    list_filter = ('date_recorded',)
+    ordering = ('-date_recorded',)
+
+    def get_queryset(self, request):
+        # Use select_related to optimize database queries when accessing related models
+        return super().get_queryset(request).select_related('leerling_vak_rating', 'leerling_vak_rating__vak')
 
 
 class LeerlingVakInline(admin.TabularInline):

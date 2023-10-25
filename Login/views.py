@@ -1,30 +1,28 @@
-from math import log
-from operator import is_
-from typing import Any
+
 from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 from django.views.generic.edit import DeleteView, UpdateView
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, FileResponse, HttpResponseServerError, JsonResponse
-from django.db.models import Q, QuerySet
-from django.core import serializers
-from django.core.files.images import ImageFile
+
 from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
-from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2
+from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2, LeerlingVakRatingHistory
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from pyrsistent import v
-from yaml import serialize
+
+
 from rest_framework import generics
-from django.contrib.auth import authenticate
-from django.http import JsonResponse
+
+
+
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -49,47 +47,68 @@ from django.db import IntegrityError
 
 @api_view(['POST'])
 def create_rating(request):
-    print('data', request.data)
-    if request.method == 'POST':
-        ratings = request.data.get('ratings', {})
-        comments = request.data.get('comments', {})
+    if request.method != 'POST':
+        return Response({"detail": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    ratings = request.data.get('ratings', {})
+    comments = request.data.get('comments', {})
+    leerling = get_student_from_request(request)
 
-        try:
-            leerling = Leerling.objects.get(gebruiker=request.user)
-        except Leerling.DoesNotExist:
-            return Response({"detail": "Leerling not found"}, status=status.HTTP_400_BAD_REQUEST)
+    if not leerling:
+        return Response({"detail": "Leerling not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-        response_data = []
+    response_data = []
 
-        for subject_name, rating_value in ratings.items():
-            try:
-                vak = Vak.objects.get(naam=subject_name)
-            except Vak.DoesNotExist:
-                print('subject not found')
-                continue
+    for subject_name, rating_value in ratings.items():
+        subject_response = handle_subject_rating(subject_name, rating_value, comments, leerling)
+        if subject_response:
+            response_data.append(subject_response)
 
-            comment = comments.get(subject_name, "")
-            existing_rating = LeerlingVakRating.objects.filter(leerling=leerling, vak=vak).first()
-            
-            data = {
-                "leerling": leerling.pk,
-                "vak": vak.pk,
-                "cijfer": int(rating_value),  # Convert to integer
-                "beschrijving": comment
-            }
+    return Response(response_data, status=status.HTTP_200_OK)
 
-            if existing_rating:
-                serializer = LeerlingVakRatingSerializer(existing_rating, data=data)
-            else:
-                serializer = LeerlingVakRatingSerializer(data=data)
-            
-            if serializer.is_valid():
-                serializer.save()
-                response_data.append({"subject": subject_name, "status": "success"})
-            else:
-                response_data.append({"subject": subject_name, "status": "error", "errors": serializer.errors})
 
-        return Response(response_data, status=status.HTTP_200_OK)
+def get_student_from_request(request):
+    try:
+        return Leerling.objects.get(gebruiker=request.user)
+    except Leerling.DoesNotExist:
+        return None
+
+
+def handle_subject_rating(subject_name, rating_value, comments, leerling):
+    vak = Vak.objects.filter(naam=subject_name).first()
+    if not vak:
+        print('subject not found')
+        return None
+
+    comment = comments.get(subject_name, "")
+    existing_rating,created = LeerlingVakRating.objects.get_or_create(leerling=leerling, vak=vak)
+
+    data = {
+        "leerling": leerling.pk,
+        "vak": vak.pk,
+        "cijfer": int(rating_value),
+        "beschrijving": comment
+    }
+
+    serializer = LeerlingVakRatingSerializer(existing_rating, data=data)
+    
+    if serializer.is_valid():
+        serializer.save()
+        record_history(existing_rating, rating_value, comment)
+        return {"subject": subject_name, "status": "success"}
+    else:
+        return {"subject": subject_name, "status": "error", "errors": serializer.errors}
+
+
+def record_history(existing_rating, rating_value, comment):
+    today = timezone.now().date()
+    history_record, created = LeerlingVakRatingHistory.objects.get_or_create(
+        leerling_vak_rating=existing_rating, date_recorded=today
+    )
+    if not created:
+        history_record.cijfer = int(rating_value)
+        history_record.beschrijving = comment
+        history_record.save()
         
 
 #############################################################################################################
@@ -508,6 +527,9 @@ class AddSessieAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])   
 class AddSessieAPIView_2(APIView):
     def post(self, request):
         # Create a mutable copy of the request data
@@ -530,6 +552,36 @@ class AddSessieAPIView_2(APIView):
             sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class UpdateSessieAPIView(APIView):
+    def put(self, request, sessie_id):   # sessie_id is the ID of the Sessie to be updated
+        try:
+            sessie = Sessie.objects.get(id=sessie_id)
+        except Sessie.DoesNotExist:
+            return Response({"error": "Sessie not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Ensure the authenticated user has the right to update this Sessie
+        # You might have other logic for this
+        if request.user != sessie.begeleider:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data.copy()
+
+        # You may need similar logic to the POST request to handle associated data
+        # For example, to handle 'Leerling' foreign key, etc.
+        # Add that here if necessary
+
+        serializer = SessieSerializer_2(instance=sessie, data=data, partial=True)  # partial=True allows for partial updates
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

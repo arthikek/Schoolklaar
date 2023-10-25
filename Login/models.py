@@ -94,6 +94,15 @@ class LeerlingVakRating(models.Model):
     class Meta:
         unique_together = ['leerling', 'vak']  # Ensure a unique rating for each subject per student
 
+class LeerlingVakRatingHistory(models.Model):
+    leerling_vak_rating = models.ForeignKey(LeerlingVakRating, on_delete=models.CASCADE)
+    cijfer = models.IntegerField(default=5)
+    beschrijving = models.TextField()
+    date_recorded = models.DateField(auto_now_add=True)
+    
+    def vak_name(self):
+        return self.leerling_vak_rating.vak.naam
+    vak_name.short_description = "Vak Name"
 # Model representing learning materials
 class Materiaal(models.Model):
     # Material details

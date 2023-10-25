@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Sessie, Begeleider, Leerling, School, Vak, User, LeerlingVakRating, Klas, Niveau,Teamleider, Materiaal
+from .models import Sessie, Begeleider, Leerling, School, Vak, User, LeerlingVakRating, Klas, Niveau,Teamleider, Materiaal, LeerlingVakRatingHistory
 
 class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
@@ -105,3 +105,8 @@ class NiveauSerializer(serializers.ModelSerializer):
     class Meta:
         model = Niveau
         fields = ['id', 'naam']
+        
+class LeerlingVakRatingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeerlingVakRatingHistory
+        fields = '__all__'

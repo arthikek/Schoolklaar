@@ -3,7 +3,7 @@ from .views import (AddSessieAPIView_2, AddStudentView, DeleteMateriaalView, Stu
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
                     AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView,
-                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,)
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,UpdateSessieAPIView)
 
 
 
@@ -50,6 +50,8 @@ urlpatterns = [
     path('api/materiaal_all/', MateriaalListApiView.as_view(), name='api_materiaal_all_context'),
     path('api/materiaal_ind/', IndividualMateriaalListApiView.as_view(), name='api_materiaal_all_context'),
     path('api/add_materiaal/', CreateMateriaalAPIView.as_view(), name='api_add_materiaal'),
+    path('api/sessies/<int:sessie_id>/', UpdateSessieAPIView.as_view(), name='update_sessie'),
+
 
 
     #form
