@@ -52,6 +52,8 @@ def create_rating(request):
     
     ratings = request.data.get('ratings', {})
     comments = request.data.get('comments', {})
+    print('ratings', ratings)
+    
     leerling = get_student_from_request(request)
 
     if not leerling:
