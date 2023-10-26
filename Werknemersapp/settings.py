@@ -247,7 +247,8 @@ else:
         "http://127.0.0.1:3000/",
         "https://leerling.schoolklaar.nl/",
         "http://localhost:3000/",
-        "https://schoolklaar-fronend-backend.vercel.app"
+        "https://schoolklaar-fronend-backend.vercel.app",
+        "https://leerlingportaal-frontend.vercel.app/"
     ]
 
 

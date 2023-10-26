@@ -859,16 +859,37 @@ class MateriaalDetailView(LoginRequiredMixin, DetailView):
 class GeneralContextAPIView(APIView):
     def get(self, request):
         try:
-            print("Received a request")
+            user = request.user
+
+            # Initialize queryset variables
+            schools_qs = School.objects.none()
+            begeleiders_qs = Begeleider.objects.none()
+            teamleiders_qs = Teamleider.objects.none()
+            sessies_qs = Sessie.objects.none()
+
+            if Begeleider.objects.filter(gebruiker=user).exists():
+                # This user is a Begeleider
+                begeleider = Begeleider.objects.get(gebruiker=user)
+                schools_qs = begeleider.scholen.all()
+                begeleiders_qs = Begeleider.objects.filter(scholen__in=schools_qs)
+                sessies_qs = Sessie.objects.filter(school__in=schools_qs)
+
+            elif Teamleider.objects.filter(gebruiker=user).exists():
+                # This user is a Teamleider
+                teamleider = Teamleider.objects.get(gebruiker=user)
+                schools_qs = School.objects.filter(id=teamleider.school.id)
+                teamleiders_qs = Teamleider.objects.filter(school=teamleider.school)
+                sessies_qs = Sessie.objects.filter(school=teamleider.school)
+
             context = {
-                'schools': SchoolSerializer(School.objects.all(), many=True).data,
-                'begeleiders': BegeleiderSerializer(Begeleider.objects.all(), many=True).data,
-                'teamleiders': TeamleiderSerializer(Teamleider.objects.all(), many=True).data,
+                'schools': SchoolSerializer(schools_qs, many=True).data,
+                'begeleiders': BegeleiderSerializer(begeleiders_qs, many=True).data,
+                'teamleiders': TeamleiderSerializer(teamleiders_qs, many=True).data,
                 'vakken': VakSerializer(Vak.objects.all(), many=True).data,
-                'leerlings': LeerlingSerializer(Leerling.objects.all(), many=True).data,
+                'leerlings': LeerlingSerializer(Leerling.objects.filter(school__in=schools_qs), many=True).data,
                 'klassen': KlasSerializer(Klas.objects.all(), many=True).data,
                 'niveaus': NiveauSerializer(Niveau.objects.all(), many=True).data,
-                'sessies':SessieSerializer(Sessie.objects.all(), many=True ).data 
+                'sessies': SessieSerializer(sessies_qs, many=True).data 
             }
            
             return Response(context)
@@ -882,4 +903,4 @@ class GeneralContextAPIView(APIView):
                 "error": "An unexpected error occurred on the server.",
                 "detail": str(e)
             }
-            return Response(error_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(error_data, status=HTTP_500_INTERNAL_SERVER_ERROR)
