@@ -547,7 +547,7 @@ class AddSessieAPIView_2(APIView):
         
         # Update the request data with the Leerling instance
         data['Leerling'] = leerling_instance.id
-        
+        print(data)
         serializer = SessieSerializer_2(data=data)
         print(serializer.is_valid())
         
