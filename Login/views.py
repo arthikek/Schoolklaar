@@ -873,15 +873,15 @@ class GeneralContextAPIView(APIView):
                 begeleider = Begeleider.objects.get(gebruiker=user)
                 schools_qs = begeleider.scholen.all()
                 begeleiders_qs = Begeleider.objects.filter(scholen__in=schools_qs)
-                sessies_qs = Sessie.objects.filter(school__in=schools_qs)
+                sessies_qs = Sessie.objects.filter(school__in=schools_qs).order_by('-datum')
+
 
             elif Teamleider.objects.filter(gebruiker=user).exists():
                 # This user is a Teamleider
                 teamleider = Teamleider.objects.get(gebruiker=user)
                 schools_qs = School.objects.filter(id=teamleider.school.id)
                 teamleiders_qs = Teamleider.objects.filter(school=teamleider.school)
-                sessies_qs = Sessie.objects.filter(school=teamleider.school)
-
+                sessies_qs = Sessie.objects.filter(school=teamleider.school).order_by('-datum')
             context = {
                 'schools': SchoolSerializer(schools_qs, many=True).data,
                 'begeleiders': BegeleiderSerializer(begeleiders_qs, many=True).data,
