@@ -25,7 +25,7 @@ class TeamleiderSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = Teamleider
-        fields = ('id', 'gebruiker', 'school')
+        fields = ('id', 'gebruiker', 'scholen')
 
 class VakSerializer(serializers.ModelSerializer):
     class Meta:
