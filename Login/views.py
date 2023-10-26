@@ -541,6 +541,7 @@ class AddSessieAPIView_2(APIView):
         
         # Extract the Leerling ID from the request data
         leerling_id = data.pop('Leerling')[0]  # QueryDict values are lists, so we take the first element
+        print(leerling_id)
         # Fetch the Leerling instance using the provided ID
         leerling_instance = Leerling.objects.get(id=leerling_id)
         
