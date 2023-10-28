@@ -43,7 +43,7 @@ jobs:
         git reset --hard origin/main
         git pull
         python manage.py collectstatic --noinput
-        python manage.py makemigrations
+        python manage.py makemigrations --merge
         python manage.py migrate
         sudo systemctl restart apache2
         EOF
