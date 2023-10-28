@@ -453,6 +453,7 @@ class AddStudentAPIView(APIView):
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def check_leerling_status(request):
     has_leerling = Leerling.objects.filter(gebruiker=request.user).exists()
@@ -460,6 +461,7 @@ def check_leerling_status(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
 def create_leerling_with_secret_code(request):
     # Extract the secret code from the POST data
     secret_code = request.data.get('secret_code')

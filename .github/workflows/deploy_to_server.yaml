@@ -1,0 +1,36 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Add server to known hosts
+      run: ssh-keyscan 178.79.150.108 >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > deploy_key
+        chmod 600 deploy_key
+        ssh -o StrictHostKeyChecking=no -i deploy_key root@178.79.150.108 <<EOF
+          cd /var/www/new_site
+          source env/bin/activate
+          pip install -r requirements.txt
+          git fetch origin
+          git reset --hard origin/main
+          git pull
+          python manage.py collectstatic --noinput
+          python manage.py makemigrations
+          python manage.py migrate
+          sudo systemctl restart apache2
+        EOF
