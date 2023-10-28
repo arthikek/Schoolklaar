@@ -3,7 +3,7 @@ from .views import (AddSessieAPIView_2, AddStudentView, DeleteMateriaalView, Stu
                     StudentListView, SessieListView, DeleteSessieView, UpdateSessieView, AddMateriaalView, 
                     MateriaalListView, UpdateMateriaalView, MateriaalDetailView, get, SessieListViewAPI, 
                     AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView,
-                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,UpdateSessieAPIView)
+                    StudentListAPI, add_sessie_view,  StudentDetailView_2,StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,UpdateSessieAPIView,create_leerling_with_secret_code)
 
 
 
@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/student_detail/', StudentDetailAPI.as_view(), name='api_student_detail'),
     path('api/create_rating/', create_rating, name='api_create_rating'),
     path('api/vakken/', get_all_subjects, name='api_get_all_subjects'),
+    path('api/create_leerling/', create_leerling_with_secret_code, name='api_create_leerling_with_secret_code'),
 
 
     #api Instructor Portal

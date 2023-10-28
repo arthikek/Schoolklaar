@@ -79,8 +79,8 @@ class TeamleiderAdmin(admin.ModelAdmin):
 
 @admin.register(Niveau)
 class NiveauAdmin(admin.ModelAdmin):
-    list_display = ('naam',)
-    search_fields = ('naam',)
+    list_display = ('naam','pk')
+    search_fields = ('naam','pk',)
 
 
 @admin.register(Vak)

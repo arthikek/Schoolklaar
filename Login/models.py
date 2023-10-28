@@ -9,6 +9,7 @@ from django.db import models
 from pkg_resources import DistInfoDistribution
 from rest_framework.views import APIView
 from django.db.models import Q
+from django.utils.crypto import get_random_string
 
 
 import datetime
@@ -20,7 +21,7 @@ from django.contrib.auth.models import User
 class School(models.Model):
     naam = models.CharField(max_length=30)  # Name of the school
     grootte = models.IntegerField()  # Size (number of students or other metric) of the school
-
+    secret_code = models.CharField(max_length=6, default=get_random_string(length=6))
     def __str__(self) -> str:
         return self.naam
 

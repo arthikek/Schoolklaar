@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, FileResponse, HttpResponseServerError, JsonResponse
-
+from typing import Dict, Any
 from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
 from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2, LeerlingVakRatingHistory
@@ -451,6 +451,48 @@ class AddStudentAPIView(APIView):
             # Log the error for debugging purposes
             print(e)
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_leerling_with_secret_code(request):
+    # Extract the secret code from the POST data
+    secret_code = request.data.get('secret_code')
+    
+    # Validate the secret code and get the associated school
+    try:
+        school = School.objects.get(secret_code=secret_code)
+    except School.DoesNotExist:
+        return Response({"detail": "Invalid secret code."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Extract other data for Leerling and use the school from the secret code
+    leerling_data = {
+        'naam': request.data.get('naam'),
+        'achternaam': request.data.get('achternaam'),
+        'email': request.data.get('email'),
+        'klas': request.data.get('klas'),
+        'niveau': request.data.get('niveau'),
+        'school': school.pk,
+        'gebruiker': request.user.id
+    }
+
+    # Validate the Leerling data using the serializer
+    serializer = LeerlingSerializer(data=leerling_data)
+    if serializer.is_valid(raise_exception=True):
+        # Use Django ORM directly to create the Leerling instance
+        leerling = Leerling.objects.create(
+            naam=leerling_data['naam'],
+            achternaam=leerling_data['achternaam'],
+            email=leerling_data['email'],
+            klas=Klas.objects.get(pk=leerling_data['klas']),
+            niveau=Niveau.objects.get(pk=leerling_data['niveau']),
+            school=school,
+            gebruiker=request.user
+        )
+
+        # Serialize the newly created Leerling instance
+        response_serializer = LeerlingSerializer(leerling)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 
