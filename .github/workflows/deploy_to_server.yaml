@@ -35,15 +35,15 @@ jobs:
       env:
         USER_IP: ${{ secrets.USER_IP }}
       run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER_IP <<EOF
-          cd /var/www/new_site
-          source env/bin/activate
-          pip install -r requirements.txt
-          git fetch origin
-          git reset --hard origin/main
-          git pull
-          python manage.py collectstatic --noinput
-          python manage.py makemigrations
-          python manage.py migrate
-          sudo systemctl restart apache2
-        EOF
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $USER_IP <<EOF
+        cd /var/www/new_site
+        source env/bin/activate
+        pip install -r requirements.txt
+        git fetch origin
+        git reset --hard origin/main
+        git pull
+        python manage.py collectstatic --noinput
+        python manage.py makemigrations
+        python manage.py migrate
+        sudo systemctl restart apache2
+EOF
