@@ -44,7 +44,6 @@ jobs:
         git pull
         python manage.py collectstatic --noinput
         python manage.py makemigrations --merge
-        yes
         python manage.py migrate
         sudo systemctl restart apache2
         EOF
