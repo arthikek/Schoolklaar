@@ -11,7 +11,7 @@ from django.http import HttpRequest, HttpResponse, FileResponse, HttpResponseSer
 from typing import Dict, Any
 from .forms import StudentForm, SessieForm, MateriaalForm, SessieFormUpdate
 from .models import Leerling, School, Sessie, Begeleider, Teamleider, Materiaal, Vak, Klas, Niveau
-from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2, LeerlingVakRatingHistory
+from .serializers import SessieSerializer, LeerlingSerializer, KlasSerializer, NiveauSerializer, SessieSerializer_2, LeerlingVakRatingHistory, LeerlingDetailSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -203,6 +203,23 @@ class StudentDetailAPI(APIView):
             
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def get(self, request, pk=None):
+        try:
+            if pk:
+                student = Leerling.objects.get(pk=pk)
+            else:
+                student = Leerling.objects.get(gebruiker=request.user)
+
+            serializer = LeerlingDetailSerializer(student)
+            return Response(serializer.data)
+
+        except Leerling.DoesNotExist:
+            raise NotFound("Student not found.")
+        
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 
 #############################################################################################################

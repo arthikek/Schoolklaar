@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie'),
     path('api/student/', StudentListAPI.as_view(), name='api_student'),
     path('api/student_detail/', StudentDetailAPI.as_view(), name='api_student_detail'),
+    path('api/student_detail/<int:pk>/', StudentDetailAPI.as_view(), name='student-detail-by-pk'),
     path('api/create_rating/', create_rating, name='api_create_rating'),
     path('api/vakken/', get_all_subjects, name='api_get_all_subjects'),
     path('api/create_leerling/', create_leerling_with_secret_code, name='api_create_leerling_with_secret_code'),

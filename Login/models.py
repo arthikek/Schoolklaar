@@ -91,7 +91,7 @@ class LeerlingVakRating(models.Model):
     vak = models.ForeignKey(Vak, on_delete=models.CASCADE)
     cijfer = models.IntegerField(choices=MOEILIJKHEIDSKEUZES, default=5)  # Numeric rating for difficulty
     beschrijving = models.TextField(default='Schrijf hier een beschrijving van het vak')  # Description or feedback
-
+    
     class Meta:
         unique_together = ['leerling', 'vak']  # Ensure a unique rating for each subject per student
 

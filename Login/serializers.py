@@ -5,6 +5,10 @@ class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
         fields = '__all__'
+class LeerlingVakRatingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeerlingVakRatingHistory
+        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,13 +75,27 @@ class SessieSerializer(serializers.ModelSerializer):
     school = SchoolSerializer(read_only=True)
     vak = VakSerializer(read_only=False)
     
+class ShallowSessieSerializer(serializers.ModelSerializer):
+    begeleider = UserSerializer(read_only=True)
+    school = SchoolSerializer(read_only=True)
+    vak = VakSerializer(read_only=True)
     
-
-
-
     class Meta:
         model = Sessie
         fields = ['id', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'extra', 'datum', 'school', 'vak']
+
+
+class LeerlingDetailSerializer(serializers.ModelSerializer):
+    school = SchoolSerializer(read_only=True)
+    vak_ratings = LeerlingVakRatingSerializer(source='leerlingvakrating_set', many=True, read_only=True)
+    sessies = ShallowSessieSerializer(source='sessie_set', many=True, read_only=True)  # Add this line
+    vak_ratings_history = LeerlingVakRatingHistorySerializer(source='leerlingvakratinghistory_set', many=True, read_only=True)
+    class Meta:
+        model = Leerling
+        fields = ['naam', 'achternaam', 'email', 'school', 'klas', 'niveau', 'gebruiker', 'vak_ratings', 'vak_ratings_history','sessies']
+
+
+
 
    
 
@@ -106,7 +124,3 @@ class NiveauSerializer(serializers.ModelSerializer):
         model = Niveau
         fields = ['id', 'naam']
         
-class LeerlingVakRatingHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LeerlingVakRatingHistory
-        fields = '__all__'
