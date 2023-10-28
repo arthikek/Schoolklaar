@@ -451,7 +451,12 @@ class AddStudentAPIView(APIView):
             # Log the error for debugging purposes
             print(e)
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_leerling_status(request):
+    has_leerling = Leerling.objects.filter(gebruiker=request.user).exists()
+    return Response({"hasLeerling": has_leerling})        
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
