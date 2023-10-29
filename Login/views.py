@@ -468,6 +468,12 @@ class AddStudentAPIView(APIView):
             # Log the error for debugging purposes
             print(e)
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+        
+        
+        
+        
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])

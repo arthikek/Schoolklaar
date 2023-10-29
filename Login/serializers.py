@@ -5,10 +5,6 @@ class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
         fields = '__all__'
-class LeerlingVakRatingHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LeerlingVakRatingHistory
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,18 +31,38 @@ class VakSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vak
         fields = '__all__'
+
         
-class LeerlingVakRatingSerializer(serializers.ModelSerializer):
-    vak = VakSerializer(read_only=True)
-    class Meta:
-        model = LeerlingVakRating
-        fields = ['leerling', 'vak', 'cijfer', 'beschrijving']
-        
+       
 class MateriaalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Materiaal
         fields = '__all__'
+        
+        
+               
+class LeerlingVakRatingHistorySerializer(serializers.ModelSerializer):
+    leerling_vak_rating = serializers.PrimaryKeyRelatedField(queryset=LeerlingVakRating.objects.all())
 
+    class Meta:
+        model = LeerlingVakRatingHistory
+        fields = '__all__'
+
+        
+        
+
+        
+        
+        
+class LeerlingVakRatingSerializer(serializers.ModelSerializer):
+    vak = VakSerializer(read_only=True)
+    histories = LeerlingVakRatingHistorySerializer(source='leerlingvakratinghistory_set', many=True, read_only=True)
+
+    class Meta:
+        model = LeerlingVakRating
+        fields = ['leerling', 'vak', 'cijfer', 'beschrijving', 'histories']
+
+   
         
 class LeerlingSerializer(serializers.ModelSerializer):
     
@@ -74,6 +90,10 @@ class SessieSerializer(serializers.ModelSerializer):
     begeleider = UserSerializer(read_only=True)
     school = SchoolSerializer(read_only=True)
     vak = VakSerializer(read_only=False)
+    
+    class Meta:
+        model = Sessie
+        fields = ['id', 'Leerling', 'begeleider', 'inzicht', 'kennis', 'werkhouding', 'extra', 'datum', 'school', 'vak']
     
 class ShallowSessieSerializer(serializers.ModelSerializer):
     begeleider = UserSerializer(read_only=True)
