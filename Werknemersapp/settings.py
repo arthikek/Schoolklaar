@@ -109,7 +109,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://yourfrontenddomain.com",
     "https://leerlingportaal-frontend.vercel.app",
     "https://schoolklaar-fronend-backend.vercel.app",
-    "https://payments-dashboard-rose.vercel.app/"
+    "https://payments-dashboard-rose.vercel.app/",
+    "https://payments-dashboard-rose.vercel.app",
     
  ]
 CORS_ALLOW_CREDENTIALS = True
