@@ -1,8 +1,11 @@
+import datetime
 from django.db.models.signals import pre_delete, post_delete, pre_save, post_save
-from Login.models import Materiaal
+from Login.models import Materiaal, LeerlingVakRating, LeerlingVakRatingHistory
 from django.dispatch import receiver
 import os
 from django.core.cache import cache
+
+
     
 @receiver(post_delete, sender=Materiaal)
 def delete_materiaal(sender, instance, **kwargs):
@@ -74,3 +77,5 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
     if not old_file == new_file:
         if os.path.isfile(old_file.path):
             os.remove(old_file.path)
+            
+

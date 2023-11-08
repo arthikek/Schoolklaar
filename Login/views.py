@@ -168,10 +168,11 @@ class StudentDetailAPI(APIView):
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request):
+        print("put request received")
         try:
             # Retrieve the student associated with the authenticated user
             student = Leerling.objects.get(gebruiker=request.user)
-
+           
             # Deserialize the request data to update the student
             serializer = LeerlingSerializer(student, data=request.data, partial=True)
             
@@ -190,7 +191,20 @@ class StudentDetailAPI(APIView):
                 for vak_id in vakken_ids:
                     if not student.vakken.filter(id=vak_id).exists():
                         student.vakken.add(vak_id)
-                
+                        # Create or get the LeerlingVakRating instance
+                        vak_rating, created = LeerlingVakRating.objects.get_or_create(
+                            leerling=student,
+                            vak_id=vak_id,
+                            defaults={'cijfer': 5, 'beschrijving': 'Standaard beschrijving'}  # Default values
+                        )
+                      
+                        # If created, also create a history record
+                        LeerlingVakRatingHistory.objects.create(
+                                leerling_vak_rating=vak_rating,
+                                cijfer=vak_rating.cijfer,
+                                beschrijving=vak_rating.beschrijving,
+                                
+                            )
                 return Response(serializer.data)
             else:
                 raise ValidationError(serializer.errors)

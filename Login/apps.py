@@ -6,5 +6,5 @@ class MyAppConfig(AppConfig):
     name = 'Login'
     
     def ready(self):
-            from . import signals
+        import Login.signals
         

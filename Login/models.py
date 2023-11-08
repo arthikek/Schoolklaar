@@ -94,7 +94,7 @@ class LeerlingVakRating(models.Model):
     
     class Meta:
         unique_together = ['leerling', 'vak']  # Ensure a unique rating for each subject per student
-
+    
 class LeerlingVakRatingHistory(models.Model):
     leerling_vak_rating = models.ForeignKey(LeerlingVakRating, on_delete=models.CASCADE)
     cijfer = models.IntegerField(default=5)
