@@ -603,30 +603,41 @@ class AddSessieAPIView(APIView):
     
     
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])   
+@permission_classes([IsAuthenticated])
 class AddSessieAPIView_2(APIView):
     def post(self, request):
         # Create a mutable copy of the request data
         data = request.data.copy()
+
+        # Extract the Leerling ID from the request data and convert it to integer
+        leerling_id = data.get('Leerling')
+        if leerling_id:
+            leerling_id = leerling_id[0]  # Assuming it's always one ID passed
+
+        try:
+            # Attempt to convert the ID to an integer
+            leerling_id = int(leerling_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid Leerling ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the Leerling instance using the provided ID
+            leerling_instance = Leerling.objects.get(id=leerling_id)
+        except Leerling.DoesNotExist:
+            return Response({"error": "Leerling not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        print("Request Data:", data)
-        
-        # Extract the Leerling ID from the request data
-        leerling_id = data.pop('Leerling')[0]  # QueryDict values are lists, so we take the first element
-        
-        # Fetch the Leerling instance using the provided ID
-        leerling_instance = Leerling.objects.get(id=leerling_id)
-        
-        # Update the request data with the Leerling instance
-        data['Leerling'] = leerling_instance.id
-        
+        # Initialize the serializer with the request data
         serializer = SessieSerializer_2(data=data)
-        print(serializer.is_valid())
         
+        # Validate the data
         if serializer.is_valid():
+            # Save the session instance if the data is valid
             sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Print and return the errors if validation fails
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 
