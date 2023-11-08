@@ -147,7 +147,7 @@ def search_leerling(naam, achternaam):
 #############################################################################################################
 ############################################## STUDENT DETAILS #################################################
 #############################################################################################################
-
+#test commit
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 class StudentDetailAPI(APIView):
