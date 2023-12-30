@@ -276,8 +276,9 @@ if DATABASE_TYPE == 'postgres':
     }
 else:  # Default to SQLite if DATABASE_TYPE is not 'postgres'
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+    
