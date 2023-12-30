@@ -4,15 +4,15 @@ from django.urls import path
 
 
 
-from .views.InstructorPortal.instructor_sessie_view import AddSessieAPIView, AddSessieAPIView_2,  UpdateSessieAPIView
-from.views.InstructorPortal.instructor_student_view import AddStudentAPIView
-from.views.InstructorPortal.instructor_material_view import MateriaalListApiView, IndividualMateriaalListApiView, CreateMateriaalAPIView
-from .views.InstructorPortal.instructor_helpers_view import GeneralContextAPIView
+from .views.Instructor.instructor_sessie_view import AddSessieAPIView, AddSessieAPIView_2,  UpdateSessieAPIView
+from.views.Instructor.instructor_student_view import AddStudentAPIView
+from.views.Instructor.instructor_material_view import MateriaalListApiView, IndividualMateriaalListApiView, CreateMateriaalAPIView
+from .views.Instructor.instructor_helpers_view import GeneralContextAPIView
 
 
-from .views.StudentPortal.student_sessie_view import SessieListViewAPI 
-from .views.StudentPortal.student_student_view import StudentListAPI, StudentDetailAPI
-from.views.StudentPortal.student_helpers_view import create_rating, create_leerling_with_secret_code, check_leerling_status, get_all_subjects
+from .views.Student.student_sessie_view import SessieListViewAPI 
+from .views.Student.student_student_view import StudentListAPI, StudentDetailAPI
+from.views.Student.student_helpers_view import create_rating, create_leerling_with_secret_code, check_leerling_status, get_all_subjects
 
 
 
