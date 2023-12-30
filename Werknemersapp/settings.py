@@ -18,6 +18,7 @@ from django.urls import reverse_lazy
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+from sympy import false
 load_dotenv()  # This loads the variables from .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -256,16 +257,27 @@ else:
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_NAME', 'default_db_name'),  # Fallback to 'default_db_name' if not set
-        'USER': os.environ.get('DB_USER', 'default_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'default_password'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Fallback to 'localhost' if not set
-        'PORT': os.environ.get('DB_PORT', '5432'),  # Fallback to '5432' if not set
-        'OPTIONS': {
-            'sslmode': 'disable',
-        },
+
+DATABASE_TYPE = os.environ.get('DATABASE_TYPE', 'sqlite')
+
+if DATABASE_TYPE == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('DB_NAME', 'default_db_name'),
+            'USER': os.environ.get('DB_USER', 'default_user'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'default_password'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'disable',
+            },
+        }
     }
-}
+else:  # Default to SQLite if DATABASE_TYPE is not 'postgres'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
