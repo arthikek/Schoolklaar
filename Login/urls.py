@@ -1,13 +1,18 @@
 from django.urls import path
 
-from .views_old import (AddSessieAPIView_2, SessieListViewAPI,  
-                    AddStudentAPIView, MateriaalListApiView, IndividualMateriaalListApiView, 
-                    StudentListAPI,   StudentDetailAPI,create_rating, get_all_subjects, GeneralContextAPIView,CreateMateriaalAPIView,UpdateSessieAPIView,create_leerling_with_secret_code,check_leerling_status) 
 
 
 
-from .views.sessie import *
 
+from .views.InstructorPortal.instructor_sessie_view import AddSessieAPIView, AddSessieAPIView_2,  UpdateSessieAPIView
+from.views.InstructorPortal.instructor_student_view import AddStudentAPIView
+from.views.InstructorPortal.instructor_material_view import MateriaalListApiView, IndividualMateriaalListApiView, CreateMateriaalAPIView
+from .views.InstructorPortal.instructor_helpers_view import GeneralContextAPIView
+
+
+from .views.StudentPortal.student_sessie_view import SessieListViewAPI 
+from .views.StudentPortal.student_student_view import StudentListAPI, StudentDetailAPI
+from.views.StudentPortal.student_helpers_view import create_rating, create_leerling_with_secret_code, check_leerling_status, get_all_subjects
 
 
 
@@ -18,7 +23,7 @@ urlpatterns = [
 
     #api Student Portal
     path('api/sessie/', SessieListViewAPI.as_view(), name='api_sessie'),
-    path('api/student/', StudentListAPI.as_view(), name='api_student'),
+    path('api/student/', StudentListAPI.as_view(), name='api_student'),     #What kind of view is this? Is this safe?
     path('api/student_detail/', StudentDetailAPI.as_view(), name='api_student_detail'),
     path('api/student_detail/<int:pk>/', StudentDetailAPI.as_view(), name='student-detail-by-pk'),
     path('api/create_rating/', create_rating, name='api_create_rating'),

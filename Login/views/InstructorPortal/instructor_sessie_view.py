@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 # Relative imports for serializers and models
-from ..serializers import SessieSerializer, SessieSerializer_2
-from ..models import Leerling, Sessie
+from ...serializers import SessieSerializer, SessieSerializer_2
+from ...models import Leerling, Sessie, Begeleider, Teamleider, School, Niveau, Vak, Klas
 
 #############################################################################################################
 ############################################## ADD Session #################################################
@@ -32,7 +32,7 @@ class AddSessieAPIView(APIView):
         leerling_instance = Leerling.objects.get(id=leerling_id)
         
         # Update the request data with the Leerling instance
-        data['Leerling'] = leerling_instance.id
+        data['Leerling'] = leerling_instance.id # type: ignore
         
         serializer = SessieSerializer(data=data)
         print(serializer.is_valid())
@@ -111,6 +111,3 @@ class UpdateSessieAPIView(APIView):
 
 
 
-
-
-        
