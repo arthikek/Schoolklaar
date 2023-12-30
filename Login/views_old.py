@@ -567,29 +567,6 @@ class CreateMateriaalAPIView(generics.CreateAPIView):
 #############################################################################################################
 
 
-class AddSessieView(LoginRequiredMixin, CreateView):
-    model = Sessie
-    form_class = SessieForm
-    template_name = 'Login/add_sessie.html'
-    success_url = reverse_lazy('Login:sessie_all')
-
-    def form_valid(self, form):
-        form.instance.begeleider = self.request.user
-        leerling_id = form.cleaned_data.get('Leerling')
-        leerling = get_object_or_404(Leerling, id=leerling_id)
-
-        # Assign the school automatically based on the chosen student
-        form.instance.school = leerling.school
-
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        models = ['School', 'Begeleider', 'Vak', 'Leerling', 'Niveau','Klas']
-        for model in models:
-            context[model.lower() + 's'] = globals()[model].objects.all()
-        return context
-
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 class AddSessieAPIView(APIView):
@@ -685,49 +662,7 @@ class UpdateSessieAPIView(APIView):
 
 
 
-@login_required
-def add_sessie_view(request):
-    try:
-        if request.method == 'POST':
-            # Access form data using request.POST
-            leerling_voornaam = request.POST.get('Leerling').split()[0]
-            leerling_achternaam = request.POST.get('Leerling').split()[1]
-            inzicht = request.POST.get('inzicht')
-            kennis = request.POST.get('kennis')
-            werkhouding = request.POST.get('werkhouding')
-            extra = request.POST.get('extra')
-            school_id = request.POST.get('school')
-            vak_naam = request.POST.get('vak')
-        
-            # Fetch related objects
-            leerling = search_leerling(leerling_voornaam, leerling_achternaam)
-            school = School.objects.get(id=leerling.school.id) # type:ignore
-            
-            vak = Vak.objects.get(naam=vak_naam)
-            begeleider = request.user  # assuming the user is logged in
 
-            # Create and save new Sessie
-            sessie = Sessie(
-                Leerling=leerling, 
-                begeleider=begeleider, 
-                inzicht=inzicht, 
-                kennis=kennis, 
-                werkhouding=werkhouding, 
-                extra=extra, 
-                school=school, 
-                vak=vak
-            )
-            
-            sessie.save()
-
-            
-            return redirect('Login:sessie_all')  # assuming you want to redirect to the list of all sessions
-
-        else:
-            return render(request, 'Login/add_sessie.html', {})
-
-    except:
-        return render(request, 'Login/add_sessie.html', {})
         
 
 
