@@ -8,3 +8,5 @@ env/
 __pycache__
 Werknemersapp/__pycache__/*
 Login/migrations/__pycache__
+.env
+data.json

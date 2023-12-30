@@ -16,7 +16,9 @@ from telnetlib import AUTHENTICATION
 from click import INT
 from django.urls import reverse_lazy
 from datetime import timedelta
-
+import os
+from dotenv import load_dotenv
+load_dotenv()  # This loads the variables from .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -253,3 +255,17 @@ else:
     ]
 
 
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_NAME', 'default_db_name'),  # Fallback to 'default_db_name' if not set
+        'USER': os.environ.get('DB_USER', 'default_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'default_password'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Fallback to 'localhost' if not set
+        'PORT': os.environ.get('DB_PORT', '5432'),  # Fallback to '5432' if not set
+        'OPTIONS': {
+            'sslmode': 'disable',
+        },
+    }
+}
