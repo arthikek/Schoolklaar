@@ -4,7 +4,7 @@ from django.urls import path
 
 
 
-from .views.Instructor.instructor_sessie_view import AddSessieAPIView, AddSessieAPIView_2,  UpdateSessieAPIView
+from .views.Instructor.instructor_sessie_view import  AddSessieAPIView_2,  UpdateSessieAPIView
 from.views.Instructor.instructor_student_view import AddStudentAPIView
 from.views.Instructor.instructor_material_view import MateriaalListApiView, IndividualMateriaalListApiView, CreateMateriaalAPIView
 from .views.Instructor.instructor_helpers_view import GeneralContextAPIView
@@ -33,8 +33,7 @@ urlpatterns = [
 
 
     #api Instructor Portal
-    path('api/add_sessie/', AddSessieAPIView.as_view(), name='api_add_sessie'),
-    path('api/add_sessie_2/', AddSessieAPIView_2.as_view(), name='api_add_sessie_2'),
+    path('api/add_sessie/', AddSessieAPIView_2.as_view(), name='api_add_sessie_2'),
     path('api/add_student/', AddStudentAPIView.as_view(), name='api_add_student'),
     path('api/general_context/', GeneralContextAPIView.as_view(), name='api_general_context'),
     path('api/materiaal_all/', MateriaalListApiView.as_view(), name='api_materiaal_all_context'),

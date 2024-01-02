@@ -282,4 +282,5 @@ else:  # Default to SQLite if DATABASE_TYPE is not 'postgres'
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-    
+
+

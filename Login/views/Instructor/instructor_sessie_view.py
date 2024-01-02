@@ -17,34 +17,9 @@ from ...models import Leerling, Sessie, Begeleider, Teamleider, School, Niveau, 
 #############################################################################################################
 
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-class AddSessieAPIView(APIView):
-    def post(self, request):
-        # Create a mutable copy of the request data
-        data = request.data.copy()
-        
-        print("Request Data:", data)
-        
-        # Extract the Leerling ID from the request data
-        leerling_id = data.pop('Leerling')[0]  # QueryDict values are lists, so we take the first element
-        # Fetch the Leerling instance using the provided ID
-        leerling_instance = Leerling.objects.get(id=leerling_id)
-        
-        # Update the request data with the Leerling instance
-        data['Leerling'] = leerling_instance.id # type: ignore
-        
-        serializer = SessieSerializer(data=data)
-        print(serializer.is_valid())
-        
-        if serializer.is_valid():
-            sessie = serializer.save(begeleider=request.user, school=leerling_instance.school)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
-    
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+
 class AddSessieAPIView_2(APIView):
     def post(self, request):
         # Create a mutable copy of the request data
@@ -52,9 +27,7 @@ class AddSessieAPIView_2(APIView):
 
         # Extract the Leerling ID from the request data and convert it to integer
         leerling_id = data.get('Leerling')
-        if leerling_id:
-            leerling_id = leerling_id[0]  # Assuming it's always one ID passed
-
+       
         try:
             # Attempt to convert the ID to an integer
             leerling_id = int(leerling_id)
@@ -65,7 +38,7 @@ class AddSessieAPIView_2(APIView):
             # Fetch the Leerling instance using the provided ID
             leerling_instance = Leerling.objects.get(id=leerling_id)
         except Leerling.DoesNotExist:
-            return Response({"error": "Leerling not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Leerling not found."}, status=status.HTTP_400_BAD_REQUEST)
         
         # Initialize the serializer with the request data
         serializer = SessieSerializer_2(data=data)
@@ -89,7 +62,7 @@ class UpdateSessieAPIView(APIView):
         try:
             sessie = Sessie.objects.get(id=sessie_id)
         except Sessie.DoesNotExist:
-            return Response({"error": "Sessie not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Sessie not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Ensure the authenticated user has the right to update this Sessie
         # You might have other logic for this
