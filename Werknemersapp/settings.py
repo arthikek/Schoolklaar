@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",                 # REST authentication
     "dj_rest_auth.registration",    # Handles user registration via REST
     "allauth.socialaccount.providers.google",  # Google OAuth provider
+    'django_grpc_framework',
 ]
 
 
