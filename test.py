@@ -1,28 +1,69 @@
-from datetime import datetime
-from django.utils import timezone
-from Login.models import Leerling, Sessie, Begeleider, User, Vak, Klas, Niveau, School
-from random import randint  # Import randint
+from django.test import TestCase
+from Login.models import School, Niveau, Leerling, User
+from django.conf import settings
+import os
 
-#sdfsdf Assuming you have already retrieved the Leerling instance for "Sam Aalders"
-leerling = Leerling.objects.get(naam="sam")
-begeleider_test=User.objects.get(username='Iris')
-school_test=School.objects.get(naam='vo')
+class EnvironmentVariablesTest(TestCase):
+    def test_environment_variables(self):
+        # Assert that DATABASE_TYPE is set
+        self.assertTrue('DATABASE_TYPE' in os.environ)
 
-# Create 20 sessions for Sam Aalders
-for i in range(1, 21):
-    # Create a new Sessie instance
-    sessie = Sessie.objects.create(
-        datum=timezone.now(),  # Use the current datetime as the session date
-        inzicht=randint(1, 5),  # Set a random inzicht value for each session
-        kennis=randint(1, 5),  # Set a random kennis value for each session
-        werkhouding=randint(1, 5),  # Set a random werkhouding value for each session
-        extra="Some text here",
-        Leerling=leerling,  # Assign the session to Sam Aalders
-        begeleider=begeleider_test,
-        school=school_test,
-        vak=Vak.objects.get(naam='Frans'),
-    )
-    # Save the session
-    sessie.save()
+        # Assert that other environment variables are set
+        self.assertTrue('DB_NAME' in os.environ)
+        self.assertTrue('DB_USER' in os.environ)
+        self.assertTrue('DB_PASSWORD' in os.environ)
+        self.assertTrue('DB_HOST' in os.environ)
+        self.assertTrue('DB_PORT' in os.environ)
 
-print("Sessions created successfully.")
+        # Print additional information
+        print("== Environment Variables Test ==")
+        print("Environment variables are set correctly.\n")
+
+class DatabaseTypeTest(TestCase):
+    def test_database_backend(self):
+        self.assertEqual(settings.DATABASES['default']['ENGINE'], 'django.db.backends.postgresql_psycopg2')
+
+        # Print additional information
+        print("== Database Type Test ==")
+        print("Database backend is correctly configured.\n")
+
+class SchoolTestCase(TestCase):
+    def setUp(self):
+        School.objects.create(naam="Test School", grootte=500 ,secret_code="f2AjB9")
+
+    def test_school_creation(self):
+        school = School.objects.get(naam="Test School")
+        self.assertEqual(school.grootte, 500)
+
+        # Print additional information
+        print("== School Creation Test ==")
+        print("School creation test passed.\n")
+
+class NiveauTestCase(TestCase):
+    def setUp(self):
+        school = School.objects.create(naam="Test School", grootte=500, secret_code="f2AjB8")
+        niveau = Niveau.objects.create(naam="Test Niveau")
+        niveau.scholen.set([school])
+
+    def test_niveau_creation(self):
+        niveau = Niveau.objects.get(naam="Test Niveau")
+        self.assertEqual(niveau.scholen.count(), 1)
+
+        # Print additional information
+        print("== Niveau Creation Test ==")
+        print("Niveau creation test passed.\n")
+
+class LeerlingTestCase(TestCase):
+    def setUp(self):
+        school = School.objects.create(naam="Test School", grootte=500 ,secret_code="f2AjB9")
+        user = User.objects.create(username="testuser")
+        Leerling.objects.create(naam="Test", achternaam="Leerling", email="test@example.com", school=school, gebruiker=user)
+
+    def test_leerling_creation(self):
+        leerling = Leerling.objects.get(naam="Test")
+        self.assertEqual(leerling.achternaam, "Leerling")
+        self.assertEqual(leerling.school.naam, "Test School")
+
+        # Print additional information
+        print("== Leerling Creation Test ==")
+        print("Leerling creation test passed.\n")

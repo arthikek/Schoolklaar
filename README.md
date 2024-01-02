@@ -7,7 +7,44 @@ Deze Django-applicatie is opgezet met verschillende pakketten, inclusief onderst
 - Python (Zorg ervoor dat je de correcte versie geïnstalleerd hebt die compatibel is met de pakketten in requirements.txt).
 - pip (Python pakket installer)
 
-## Setup & Installatie
+
+
+
+## Setup & Installatie Docker
+
+1. Bouw een image
+
+   ```
+   docker build -t my-django-app .
+   
+   ```
+
+2. Run the image
+
+    ```
+    docker run -p 8000:8000 my-django-app
+
+    ```
+3. Bezoek de backend
+
+    ```
+    
+    http://localhost:8000
+
+    ```
+
+4. test je omgeving
+
+    Voer in je docker container het volgende uit
+
+    ```
+    
+    python manage.py test
+    
+    ```
+
+## Setup & Installatie Handmatig
+
 1. Kloon de repository:
     ```
     git clone [JOUW_REPOSITORY_URL]
@@ -28,6 +65,13 @@ Deze Django-applicatie is opgezet met verschillende pakketten, inclusief onderst
     ```
 5. Stel omgevingsvariabelen in (als je python-dotenv gebruikt, kun je deze toevoegen aan een .env bestand):
     - Zorg ervoor dat je alle noodzakelijke API-sleutels, geheime sleutels of andere configuraties instelt die vereist zijn door de geïnstalleerde pakketten.
+
+6. Test je omgeving
+    ```
+    python manage.py test
+    
+    ```
+
 6. Start de ontwikkelingsserver:
     ```
     python manage.py runserver
